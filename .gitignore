@@ -18,3 +18,5 @@ Copy-ToWoWAddons.local.ps1
 # Local notes
 ROADMAP.local.md
 RELEASE_NOTES.md
+
+.claude/
