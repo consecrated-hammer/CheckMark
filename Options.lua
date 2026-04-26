@@ -42,6 +42,7 @@ local function oBtn(parent, label, w, h)
     bg:SetAllPoints() ; b._bg = bg
     local hl = solidTex(b, COLOR_OPT.btnHov, "HIGHLIGHT")
     hl:SetAllPoints()
+    hl:SetBlendMode("ADD")
     local txt = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     txt:SetPoint("CENTER") ; txt:SetText(label) ; txt:SetTextColor(c(COLOR_OPT.text))
     b._txt = txt
@@ -69,6 +70,7 @@ local function makeCheckRow(parent, label, getter, setter)
     bg:SetAllPoints()
     local hl = solidTex(cb, COLOR_OPT.btnHov, "HIGHLIGHT")
     hl:SetAllPoints()
+    hl:SetBlendMode("ADD")
     local border = solidTex(cb, COLOR_OPT.border, "BORDER")
     border:SetSize(16, 16) ; border:SetAllPoints()
 
@@ -79,7 +81,7 @@ local function makeCheckRow(parent, label, getter, setter)
 
     local function refresh()
         if getter and getter() then
-            check:SetText("|cff62ade3\xE2\x9C\x93|r")
+            check:SetText("|cff62ade3\226\156\147|r")
         else
             check:SetText("")
         end
@@ -130,6 +132,7 @@ local function makeSlotRow(parent, slotLabel, getMarker, setMarker)
 
         local hl = solidTex(btn, COLOR_OPT.btnHov, "HIGHLIGHT")
         hl:SetAllPoints()
+        hl:SetBlendMode("ADD")
 
         local idx = i
         btn:SetScript("OnClick", function()
@@ -174,7 +177,7 @@ local function buildOptions()
     optPanel = CreateFrame("Frame", "CheckMarkOptions", UIParent)
     optPanel:SetSize(OW, OH)
     optPanel:SetPoint("CENTER", UIParent, "CENTER", 200, 80)
-    optPanel:SetFrameStrata("DIALOG")
+    optPanel:SetFrameStrata("FULLSCREEN_DIALOG")
     optPanel:SetMovable(true)
     optPanel:SetClampedToScreen(true)
     optPanel:EnableMouse(true)
@@ -193,7 +196,7 @@ local function buildOptions()
     titleBar:SetScript("OnMouseUp", function() optPanel:StopMovingOrSizing() end)
 
     local tBg = solidTex(titleBar, COLOR_OPT.titleBg) ; tBg:SetAllPoints()
-    local tTxt = oFs(titleBar, 13, "CheckMark \xe2\x80\x94 Options")
+    local tTxt = oFs(titleBar, 13, "CheckMark \226\128\148 Options")
     tTxt:SetPoint("LEFT", titleBar, "LEFT", PAD, 0)
     tTxt:SetTextColor(c(COLOR_OPT.accent))
 
@@ -308,14 +311,10 @@ end
 
 function ns.showOptions()
     if not optPanel then buildOptions() end
-    -- Refresh slot rows to reflect current DB values
-    for _, row in ipairs(slotRows) do
-        if row.Refresh then row:Refresh() end
-    end
-    for _, row in ipairs(checkRows) do
-        if row._refresh then row._refresh() end
-    end
+    for _, row in ipairs(slotRows)  do if row.Refresh   then row:Refresh()   end end
+    for _, row in ipairs(checkRows) do if row._refresh  then row._refresh()  end end
     optPanel:Show()
+    optPanel:Raise()
 end
 
 function ns.hideOptions()

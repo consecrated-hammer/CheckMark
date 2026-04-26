@@ -71,6 +71,7 @@ local function makeBtn(parent, label, w, h)
 
     local hl = solidTex(b, COLOR.btnHover, "HIGHLIGHT")
     hl:SetAllPoints()
+    hl:SetBlendMode("ADD")
 
     local txt = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     txt:SetPoint("CENTER")
@@ -122,6 +123,7 @@ local function makeMarkerSelector(parent, rowIndex, rowCallbacks)
 
         local hl = solidTex(btn, COLOR.btnHover, "HIGHLIGHT")
         hl:SetAllPoints()
+        hl:SetBlendMode("ADD")
 
         local idx = i
         btn:SetScript("OnClick", function()
@@ -308,37 +310,44 @@ local function buildPopup()
     div3:SetPoint("BOTTOMLEFT",  popup, "BOTTOMLEFT",  0, FOOTER_H)
     div3:SetPoint("BOTTOMRIGHT", popup, "BOTTOMRIGHT", 0, FOOTER_H)
 
-    -- Secure Apply / Clear buttons (user must click these directly)
+    -- Secure Apply / Clear buttons (user must click these directly).
+    -- Labels and backgrounds are children of the secure buttons so they
+    -- stay properly centered and don't require manual positioning.
     local applySecure, clearSecure = ns.getSecureButtons()
+
     applySecure:SetParent(popup)
     applySecure:SetSize(72, 24)
     applySecure:SetPoint("BOTTOMLEFT", popup, "BOTTOMLEFT", PAD, 8)
     applySecure:SetFrameLevel(popup:GetFrameLevel() + 5)
-    -- Visual label on top (non-interactive, just text)
-    local applyLbl = popup:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    applyLbl:SetText("Apply")
-    applyLbl:SetTextColor(col(COLOR.text))
-    applyLbl:SetPoint("BOTTOMLEFT", popup, "BOTTOMLEFT", PAD + 24, 16)
-    -- Background behind the button (cosmetic)
-    local applyBg = solidTex(popup, COLOR.btnBg, "ARTWORK")
-    applyBg:SetSize(72, 24)
-    applyBg:SetPoint("BOTTOMLEFT", popup, "BOTTOMLEFT", PAD, 8)
+    local applyBg = solidTex(applySecure, COLOR.btnBg, "BACKGROUND")
+    applyBg:SetAllPoints()
+    local applyHl = solidTex(applySecure, COLOR.btnHover, "HIGHLIGHT")
+    applyHl:SetAllPoints() ; applyHl:SetBlendMode("ADD")
+    local applyEdgeT = applySecure:CreateTexture(nil,"BORDER"); applyEdgeT:SetColorTexture(col(COLOR.border)); applyEdgeT:SetSize(72,1); applyEdgeT:SetPoint("TOPLEFT")
+    local applyEdgeB = applySecure:CreateTexture(nil,"BORDER"); applyEdgeB:SetColorTexture(col(COLOR.border)); applyEdgeB:SetSize(72,1); applyEdgeB:SetPoint("BOTTOMLEFT")
+    local applyEdgeL = applySecure:CreateTexture(nil,"BORDER"); applyEdgeL:SetColorTexture(col(COLOR.border)); applyEdgeL:SetSize(1,24); applyEdgeL:SetPoint("TOPLEFT")
+    local applyEdgeR = applySecure:CreateTexture(nil,"BORDER"); applyEdgeR:SetColorTexture(col(COLOR.border)); applyEdgeR:SetSize(1,24); applyEdgeR:SetPoint("TOPRIGHT")
+    local applyLbl = applySecure:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    applyLbl:SetPoint("CENTER") ; applyLbl:SetText("Apply") ; applyLbl:SetTextColor(col(COLOR.text))
 
     clearSecure:SetParent(popup)
-    clearSecure:SetSize(56, 24)
+    clearSecure:SetSize(60, 24)
     clearSecure:SetPoint("LEFT", applySecure, "RIGHT", 4, 0)
     clearSecure:SetFrameLevel(popup:GetFrameLevel() + 5)
-    local clearBg = solidTex(popup, COLOR.btnBg, "ARTWORK")
-    clearBg:SetSize(56, 24)
-    clearBg:SetPoint("LEFT", applyBg, "RIGHT", 4, 0)
-    local clearLbl = popup:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    clearLbl:SetText("Clear")
-    clearLbl:SetTextColor(col(COLOR.text))
-    clearLbl:SetPoint("LEFT", applyLbl, "RIGHT", 18, 0)
+    local clearBg = solidTex(clearSecure, COLOR.btnBg, "BACKGROUND")
+    clearBg:SetAllPoints()
+    local clearHl = solidTex(clearSecure, COLOR.btnHover, "HIGHLIGHT")
+    clearHl:SetAllPoints() ; clearHl:SetBlendMode("ADD")
+    local clearEdgeT = clearSecure:CreateTexture(nil,"BORDER"); clearEdgeT:SetColorTexture(col(COLOR.border)); clearEdgeT:SetSize(60,1); clearEdgeT:SetPoint("TOPLEFT")
+    local clearEdgeB = clearSecure:CreateTexture(nil,"BORDER"); clearEdgeB:SetColorTexture(col(COLOR.border)); clearEdgeB:SetSize(60,1); clearEdgeB:SetPoint("BOTTOMLEFT")
+    local clearEdgeL = clearSecure:CreateTexture(nil,"BORDER"); clearEdgeL:SetColorTexture(col(COLOR.border)); clearEdgeL:SetSize(1,24); clearEdgeL:SetPoint("TOPLEFT")
+    local clearEdgeR = clearSecure:CreateTexture(nil,"BORDER"); clearEdgeR:SetColorTexture(col(COLOR.border)); clearEdgeR:SetSize(1,24); clearEdgeR:SetPoint("TOPRIGHT")
+    local clearLbl = clearSecure:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    clearLbl:SetPoint("CENTER") ; clearLbl:SetText("Clear") ; clearLbl:SetTextColor(col(COLOR.text))
 
     -- Save button
     local saveBtn = makeBtn(popup, "Save", 50, 24)
-    saveBtn:SetPoint("LEFT", clearBg, "RIGHT", 4, 0)
+    saveBtn:SetPoint("LEFT", clearSecure, "RIGHT", 4, 0)
     saveBtn:SetPoint("BOTTOM", popup, "BOTTOM", 0, 8)
     saveBtn:SetScript("OnClick", function()
         if not ns.db then return end
@@ -383,7 +392,7 @@ function ns.refreshPopup()
     local zone = GetRealZoneText() or ""
     popup._groupInfo:SetText(
         #currentMembers.." player"..(#currentMembers ~= 1 and "s" or "")
-        ..(zone ~= "" and (" \xE2\x80\x94 "..zone) or ""))
+        ..(zone ~= "" and (" \226\128\148 "..zone) or ""))
 
     popup._modeToggle:SetMode(currentMode)
 
@@ -410,7 +419,7 @@ function ns.refreshPopup()
                     ns.rebuildSecureButtons(currentMembers, currentAssignments)
                 end
             else
-                row._sub:SetText("\xe2\x80\x94")
+                row._sub:SetText("\226\128\148")
                 row._sel:SetMarker(0)
             end
             row:Show()
