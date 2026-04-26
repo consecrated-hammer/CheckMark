@@ -1,0 +1,13 @@
+## Interface: 120005
+## Title: CheckMark
+## Author: consecrated-hammer
+## Version: 0.1.0
+## Notes: Raid marker assignment popup for 2-5 player groups, dungeons, and delves.
+## Category-enUS: Raid
+## SavedVariables: CheckMarkDB
+
+Core.lua
+Templates.lua
+Marker.lua
+UI.lua
+Options.lua

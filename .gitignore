@@ -1,0 +1,20 @@
+# Archives
+*.zip
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Lua bytecode / temp
+*.luac
+*.tmp
+
+# Local dev scripts (not for distribution)
+Build-CurseForgeZip.local.ps1
+Copy-ToWoWAddons.local.ps1
+
+# Local notes
+ROADMAP.local.md
+RELEASE_NOTES.md
