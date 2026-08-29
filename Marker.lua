@@ -1,86 +1,64 @@
 local addon, ns = ...
 
--- ── Secure buttons ─────────────────────────────────────────────────────────
--- SetRaidTarget is protected in retail WoW.  We use SecureActionButtonTemplate
--- buttons whose macrotext is built out-of-combat; the user must physically
--- click Apply or Clear — we never call :Click() programmatically.
+-- Every visible assignment cell is its own small, explicit secure action.
+-- This mirrors Salve's action cells: one player decision, one prepared unit
+-- token and one marker. There is deliberately no automatic queue.
 
-local applyBtn
-local clearBtn
+local pendingCells, pendingMembers, pendingAssignments
 
-local function makeSecureBtn(name)
-    local b = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
-    b:RegisterForClicks("AnyUp", "AnyDown")
-    b:SetAttribute("type", "macro")
-    b:SetAttribute("macrotext", "")
-    b:Hide()
-    return b
+local function inCombat()
+    return InCombatLockdown and InCombatLockdown()
 end
 
--- Build a macro that targets each member with an assignment and marks them.
--- Entries with marker == 0 are skipped.
--- Returns the macro string (may be empty if no assignments).
-local function buildApplyMacro(members, assignments)
-    local lines = {}
-    for _, m in ipairs(members) do
-        local marker = assignments and assignments[m.fullName] or 0
-        if marker and marker > 0 then
-            table.insert(lines, "/targetexact "..m.targetName)
-            table.insert(lines, "/tm "..marker)
-        end
-    end
-    if #lines == 0 then return "" end
-    table.insert(lines, "/targetlasttarget")
-    return table.concat(lines, "\n")
-end
-
--- Build a clear macro that removes marks from all assigned members.
-local function buildClearMacro(members, assignments)
-    local lines = {}
-    for _, m in ipairs(members) do
-        local marker = assignments and assignments[m.fullName] or 0
-        if marker and marker > 0 then
-            table.insert(lines, "/targetexact "..m.targetName)
-            table.insert(lines, "/tm 0")
-        end
-    end
-    if #lines == 0 then return "" end
-    table.insert(lines, "/targetlasttarget")
-    return table.concat(lines, "\n")
-end
-
--- Called whenever the popup's current assignments change.
--- Must be called out-of-combat; if in combat, defers via pendingMarkerRebuild.
-function ns.rebuildSecureButtons(members, assignments)
-    if InCombatLockdown() then
+function ns.bindMarkerCells(cells, members, assignments)
+    if inCombat() then
         ns.pendingMarkerRebuild = true
-        -- Store args so the deferred rebuild has them
-        ns._pendingMembers    = members
-        ns._pendingAssignments = assignments
+        pendingCells, pendingMembers, pendingAssignments = cells, members, assignments
         return false
     end
 
-    -- Use stored pending args if called from PLAYER_REGEN_ENABLED with no args
-    members     = members     or ns._pendingMembers    or {}
-    assignments = assignments or ns._pendingAssignments or {}
-    ns._pendingMembers    = nil
-    ns._pendingAssignments = nil
-
-    if not applyBtn then
-        applyBtn = makeSecureBtn("CheckMarkApplySecure")
-        clearBtn = makeSecureBtn("CheckMarkClearSecure")
+    ns.pendingMarkerRebuild = false
+    pendingCells, pendingMembers, pendingAssignments = nil, nil, nil
+    for index, cell in ipairs(cells or {}) do
+        local member = members and members[index]
+        local marker = member and assignments and assignments[member.fullName] or 0
+        if member and marker and marker > 0 then
+            -- Native Midnight secure delegate: one real click sets the
+            -- configured icon; right-click clears whichever icon is there.
+            cell:SetAttribute("type1", "raidtarget")
+            cell:SetAttribute("unit1", member.unit)
+            cell:SetAttribute("marker1", marker)
+            cell:SetAttribute("action1", "set")
+            cell:SetAttribute("type2", "raidtarget")
+            cell:SetAttribute("unit2", member.unit)
+            cell:SetAttribute("action2", "clear")
+            cell:Enable()
+        elseif member then
+            -- No marker action is prepared here; the UI uses this live cell
+            -- as a direct shortcut to configure the missing role marker.
+            cell:SetAttribute("type1", nil)
+            cell:SetAttribute("unit1", nil)
+            cell:SetAttribute("marker1", nil)
+            cell:SetAttribute("action1", nil)
+            cell:SetAttribute("type2", nil)
+            cell:SetAttribute("unit2", nil)
+            cell:SetAttribute("action2", nil)
+            cell:Enable()
+        else
+            cell:SetAttribute("type1", nil)
+            cell:SetAttribute("unit1", nil)
+            cell:SetAttribute("marker1", nil)
+            cell:SetAttribute("action1", nil)
+            cell:SetAttribute("type2", nil)
+            cell:SetAttribute("unit2", nil)
+            cell:SetAttribute("action2", nil)
+            cell:Disable()
+        end
     end
-
-    applyBtn:SetAttribute("macrotext", buildApplyMacro(members, assignments))
-    clearBtn:SetAttribute("macrotext", buildClearMacro(members, assignments))
     return true
 end
 
--- Returns the pre-built secure buttons so UI.lua can overlay visible buttons on top.
-function ns.getSecureButtons()
-    if not applyBtn then
-        applyBtn = makeSecureBtn("CheckMarkApplySecure")
-        clearBtn = makeSecureBtn("CheckMarkClearSecure")
-    end
-    return applyBtn, clearBtn
+function ns.rebuildPendingRowSecureButtons()
+    if inCombat() or not ns.pendingMarkerRebuild then return false end
+    return ns.bindMarkerCells(pendingCells, pendingMembers, pendingAssignments)
 end

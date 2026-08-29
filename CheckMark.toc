@@ -1,13 +1,25 @@
-## Interface: 120005
+## Interface: 120100
 ## Title: CheckMark
 ## Author: consecrated-hammer
-## Version: 0.1.0
-## Notes: Raid marker assignment popup for 2-5 player groups, dungeons, and delves.
+## Version: 1.0.0
+## Notes: Pre-pull marker assignments for 2-5 player parties.
 ## Category-enUS: Raid
+## X-Curse-Project-ID: 1673005
+## X-Website: https://github.com/consecrated-hammer/CheckMark
+## X-Source: https://github.com/consecrated-hammer/CheckMark
+## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
 ## SavedVariables: CheckMarkDB
+## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
 Core.lua
 Templates.lua
 Marker.lua
+Theme.lua
+Minimap.lua
 UI.lua
-Options.lua
+Options\Shared.lua
+Options\CheckMark.lua
+Options\Markers.lua
+Options\Visibility.lua
+Options\Commands.lua
+Options\About.lua

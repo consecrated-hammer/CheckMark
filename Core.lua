@@ -23,8 +23,25 @@ for i = 1, 8 do
 end
 ns.MARKER_TEXTURES[0] = nil  -- no icon for "none"
 
--- Ordered role slots for role-based mode
-ns.ROLE_SLOTS    = { "TANK", "HEALER", "DPS1", "DPS2", "DPS3" }
+function ns.getVersion()
+    local getMetadata = C_AddOns and C_AddOns.GetAddOnMetadata
+    local version = getMetadata and getMetadata(addon, "Version")
+    if not version and GetAddOnMetadata then version = GetAddOnMetadata(addon, "Version") end
+    return version or "development"
+end
+
+function ns.notify(msg)
+    print("|cffffd200CheckMark:|r "..tostring(msg or ""))
+    if UIErrorsFrame then
+        UIErrorsFrame:AddMessage("CheckMark: "..tostring(msg or ""), 1, 0.82, 0)
+    end
+end
+
+ns.ROLE_SLOTS = { "TANK", "HEALER", "DPS1", "DPS2", "DPS3" }
+-- Compatibility aliases for saved UI fragments from earlier development
+-- builds; CheckMark now exposes only this five-player role template.
+ns.PARTY_ROLE_SLOTS = ns.ROLE_SLOTS
+ns.RAID_ROLE_SLOTS = {}
 ns.ROLE_SLOT_LABELS = {
     TANK   = "Tank",
     HEALER = "Healer",
@@ -36,10 +53,19 @@ ns.ROLE_SLOT_LABELS = {
 -- ── DB defaults ────────────────────────────────────────────────────────────
 
 local DEFAULT_DB = {
-    popup_on_group_change   = true,
-    popup_on_instance_enter = true,
-    last_mode               = "ROLE",  -- "ROLE" or "NAME"
+    visibility_mode         = "ALWAYS",
+    panel_hidden            = false,
     popup_position          = nil,
+    show_handle             = true,
+    handle_position         = "TOP",
+    minimap_angle           = 225,
+    hide_minimap            = false,
+    cell_width              = 20,
+    cell_height             = 20,
+    icon_size               = 20,
+    cell_columns            = 5,
+    cell_spacing            = 1,
+    show_cell_names         = false,
     role_template = {
         TANK   = 8,  -- Skull
         HEALER = 3,  -- Diamond
@@ -47,9 +73,21 @@ local DEFAULT_DB = {
         DPS2   = 0,
         DPS3   = 0,
     },
-    name_templates    = {},
-    remembered_groups = {},
 }
+
+local function copyValue(value)
+    if type(value) ~= "table" then return value end
+    local result = {}
+    for key, child in pairs(value) do result[key] = copyValue(child) end
+    return result
+end
+
+local function copyDefaults(dest)
+    for k in pairs(dest) do dest[k] = nil end
+    for k, v in pairs(DEFAULT_DB) do
+        dest[k] = copyValue(v)
+    end
+end
 
 local function initDB()
     if type(CheckMarkDB) ~= "table" then CheckMarkDB = nil end
@@ -58,58 +96,60 @@ local function initDB()
 
     for k, v in pairs(DEFAULT_DB) do
         if d[k] == nil then
-            if type(v) == "table" then
-                d[k] = {}
-                for kk, vv in pairs(v) do d[k][kk] = vv end
-            else
-                d[k] = v
-            end
+            d[k] = copyValue(v)
         end
     end
 
-    -- Fill any missing role slots
+    -- Fill any missing party role slots.
     for _, slot in ipairs(ns.ROLE_SLOTS) do
         if d.role_template[slot] == nil then
             d.role_template[slot] = 0
         end
     end
-
     ns.db = d
+    -- Saved-party planning is intentionally deferred; keep the saved-variable
+    -- surface focused on reusable role presets for now.
+    d.last_mode, d.name_templates, d.remembered_groups = nil, nil, nil
+    d.popup_on_group_change, d.popup_on_instance_enter = nil, nil
+    d.raid_role_template, d.template_mode, d.auto_template_mode, d.panel_settings = nil, nil, nil, nil
+end
+
+function ns.resetDB()
+    CheckMarkDB = {}
+    copyDefaults(CheckMarkDB)
+    ns.db = CheckMarkDB
+    if ns.refreshOptions then ns.refreshOptions() end
+    if ns.refreshPopup then ns.refreshPopup() end
+    if ns.applyVisibility then ns.applyVisibility() end
 end
 
 -- ── Group helpers ──────────────────────────────────────────────────────────
 
--- Returns {unit, name, realm, fullName, targetName, role, classFile} for each member.
--- Player is always first; party1..party4 follow in party order.
+-- Returns {unit, name, realm, fullName, role, classFile} for each member.
 function ns.getGroupMembers()
     local members = {}
+    local seen = {}
 
     local function addUnit(unit)
         if not UnitExists(unit) then return end
+        local guid = UnitGUID(unit)
+        if guid and seen[guid] then return end
         local name, realm = UnitName(unit)
         if not name then return end
+        if guid then seen[guid] = true end
         if not realm or realm == "" then realm = GetRealmName() end
-        -- targetName: used in /targetexact — include realm only if cross-realm
-        local _, localRealm = UnitName("player")
-        local targetName = name
-        if realm ~= GetRealmName() then
-            targetName = name.."-"..realm
-        end
         table.insert(members, {
             unit       = unit,
             name       = name,
             realm      = realm,
             fullName   = name.."-"..realm,
-            targetName = targetName,
             role       = UnitGroupRolesAssigned(unit) or "NONE",
             classFile  = select(2, UnitClass(unit)) or "WARRIOR",
         })
     end
 
     addUnit("player")
-    if IsInGroup() and not IsInRaid() then
-        for i = 1, 4 do addUnit("party"..i) end
-    end
+    for i = 1, 4 do addUnit("party"..i) end
 
     return members
 end
@@ -121,8 +161,8 @@ function ns.isEligibleGroup()
 end
 
 -- Sorted full-name signature uniquely identifying the current group composition
-function ns.getGroupSignature()
-    local members = ns.getGroupMembers()
+function ns.getGroupSignature(members)
+    members = members or ns.getGroupMembers()
     local names = {}
     for _, m in ipairs(members) do table.insert(names, m.fullName) end
     table.sort(names)
@@ -136,7 +176,10 @@ ns.pendingMarkerRebuild = false  -- read by Marker.lua
 
 local function onGroupChanged()
     if not ns.db then return end
-    if not ns.db.popup_on_group_change then return end
+    -- The grid owns its visibility through a secure state driver.  Do not try
+    -- to show or hide secure children during combat.
+    if ns.applyVisibility then ns.applyVisibility() end
+    if InCombatLockdown and InCombatLockdown() then return end
     if not ns.isEligibleGroup() then
         if ns.hidePopup then ns.hidePopup() end
         return
@@ -149,37 +192,41 @@ core:SetScript("OnEvent", function(_, event, ...)
         local addonName = ...
         if addonName ~= addon then return end
         initDB()
+        if ns.Options and ns.Options.EnsureBuilt then ns.Options.EnsureBuilt() end
         if ns.onAddonLoaded then ns.onAddonLoaded() end
+        if ns.createMinimapButton then ns.createMinimapButton() end
 
     elseif event == "GROUP_ROSTER_UPDATE" then
         onGroupChanged()
 
     elseif event == "PLAYER_ENTERING_WORLD" then
-        local isLogin, isReload = ...
-        -- Suppress the initial login/reload fire; only catch actual zone transitions
-        if isLogin or isReload then return end
-        if ns.db and ns.db.popup_on_instance_enter then
-            C_Timer.After(1.5, function()
-                if ns.isEligibleGroup() and ns.showPopup then
-                    ns.showPopup()
-                end
-            end)
-        end
+        -- Group unit tokens are reliable on the next frame on both login and
+        -- reload, so use the same visibility rule for every world entry.
+        C_Timer.After(0.2, onGroupChanged)
 
     elseif event == "ROLE_CHANGED_INFORM" then
         if ns.refreshPopup then ns.refreshPopup() end
+
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        -- The secure visibility driver hides the grid at combat start.
+        if ns.refreshMinimapButton then ns.refreshMinimapButton() end
 
     elseif event == "PLAYER_REGEN_ENABLED" then
         if ns.pendingMarkerRebuild then
             ns.pendingMarkerRebuild = false
             if ns.rebuildSecureButtons then ns.rebuildSecureButtons() end
+            if ns.rebuildPendingRowSecureButtons then ns.rebuildPendingRowSecureButtons() end
         end
+        if ns.applyVisibility then ns.applyVisibility() end
+        if ns.refreshPopup then ns.refreshPopup() end
+        if ns.refreshMinimapButton then ns.refreshMinimapButton() end
     end
 end)
 
 core:RegisterEvent("ADDON_LOADED")
 core:RegisterEvent("GROUP_ROSTER_UPDATE")
 core:RegisterEvent("PLAYER_ENTERING_WORLD")
+core:RegisterEvent("PLAYER_REGEN_DISABLED")
 core:RegisterEvent("PLAYER_REGEN_ENABLED")
 pcall(core.RegisterEvent, core, "ROLE_CHANGED_INFORM")
 
@@ -193,8 +240,8 @@ SlashCmdList["CHECKMARK"] = function(msg)
         if ns.showOptions then ns.showOptions()
         else print("CheckMark: options panel not ready.") end
     elseif msg == "reset" then
-        CheckMarkDB = nil
-        ReloadUI()
+        ns.resetDB()
+        ns.notify("Settings reset.")
     else
         if ns.togglePopup then ns.togglePopup()
         else print("CheckMark: UI not ready.") end

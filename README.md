@@ -1,38 +1,51 @@
 # CheckMark
 
-A WoW Retail addon (Interface 120005) that shows a popup for 2-5 player groups — party, dungeon, delve, or mythic — so you can assign raid target icons before the pull.
+**A compact pre-pull marker grid for small WoW parties.** It uses Salve-style
+cells: configure role markers in Settings, then click each planned person's
+small cell before the pull.
 
-## Features
+## Why CheckMark exists
 
-- Auto-shows when your group forms or changes, and when entering a dungeon or delve
-- **Role-based mode** — Tank, Healer, DPS 1/2/3 slots with defaults (Skull for tank, Diamond for healer)
-- **Name-based mode** — per-player assignments remembered from previous sessions
-- Saved per-group memory: the same group of friends gets the same defaults next time
-- Secure **Apply** and **Clear** buttons — marking happens via a user click, respecting WoW's protected API
-- Clean, dark UI inspired by DandersFrames
-- Global `SavedVariables` — shared across all characters on the account
+Raid target markers still need a protected player action. CheckMark makes the
+pre-pull setup quick without pretending it can mark a party automatically.
+Each cell prepares one safe action using the party's stable unit token, not
+player-name macros.
 
-## Usage
+## What it does
 
-- `/checkmark` — toggle the popup
-- `/cm` — same shortcut
-- `/checkmark options` — open the options panel
-- `/checkmark reset` — wipe all saved settings and reload
+- Works with two-to-five-player parties, including dungeons and delves.
+- Uses role-template defaults such as Tank = Skull and Healer = Diamond.
+- Shows the configured plan only. CheckMark deliberately does not infer whether
+  another player has added, removed, or changed a current marker.
+- Lets you choose Star, Circle, Diamond, Triangle, Moon, Square, Cross, Skull
+  or None. Markers are kept unique.
+- Uses Salve-like direct action cells: click a planned party member to send
+  that member's configured marker; right-click removes that member's current
+  marker. Cells without a plan cannot send an action.
+- Includes a movable minimap launcher: left-click shows or hides the grid and
+  right-click opens Settings. The small handle above the grid drags it;
+  right-clicking that handle opens Settings.
+- Has Salve-style visibility settings: **Always outside combat** shows the
+  grid for an eligible party and hides it through a secure state driver the
+  moment combat starts; **Hidden** keeps it off.
 
-The **Apply** button builds a macro targeting each assigned member and marking them.  
-The **Clear** button removes all marks.  
-The **Save** button stores the current assignments as name-based defaults for each player and remembers the group composition for next time.
+## Getting started
 
-## Installation
+Type `/checkmark` or `/cm` in a small party. Set role markers in Settings,
+then left-click each planned person's compact assignment cell before the pull.
+Right-click a configured cell to remove that person's marker.
 
-Drop the `CheckMark` folder into:
+`/checkmark options` opens the Salve-style settings window, with the same
+navigation rail and controls but CheckMark-specific Panel, Markers and
+Visibility pages. `/checkmark reset` clears CheckMark's saved settings.
 
-```
-World of Warcraft\_retail_\Interface\AddOns\
-```
+## Limits worth stating plainly
 
-## Notes
-
-- Raids (6+ players) are intentionally excluded
-- Marking is protected in WoW retail — the addon cannot mark silently; you must click Apply
-- Works with cross-realm party members
+- **Markers need your click and permission.** Each click sends one prepared
+  marker. Only a party leader or assistant can apply markers where Blizzard
+  requires that authority.
+- **The plan is not a readback.** WoW does not give CheckMark a reliable,
+  usable view of another player's current marker, so it never claims one.
+- **Prep before the pull.** CheckMark is unavailable in combat and never
+  applies markers because the group roster changed.
+- **Six-plus-player raids are intentionally out of scope.**

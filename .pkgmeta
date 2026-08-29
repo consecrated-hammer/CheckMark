@@ -1,0 +1,20 @@
+package-as: CheckMark
+
+enable-nolib-creation: no
+
+manual-changelog:
+  filename: RELEASE_NOTES.md
+  markup-type: markdown
+
+ignore:
+  - .github
+  - .pkgmeta
+  - .gitignore
+  - .scratch
+  - Art
+  - tests
+  - Build-CurseForgeZip.local.ps1
+  - Copy-ToWoWAddons.local.ps1
+  - CHANGELOG.md
+  - README.md
+  - Options.lua
