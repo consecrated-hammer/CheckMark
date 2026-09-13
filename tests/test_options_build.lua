@@ -47,7 +47,7 @@ local ns = {
     db = {
         settingsPoint = { "CENTER", "CENTER", 0, 0 }, visibility_mode = "ALWAYS", panel_hidden = false, hide_minimap = false, show_handle = true, handle_position = "TOP",
         popup_position = nil, cell_width = 20, cell_height = 20, icon_size = 20, cell_columns = 5, cell_spacing = 1,
-        show_cell_names = false, template_mode = "PARTY", auto_template_mode = false,
+        show_cell_names = false, marker_sound_enabled = true, marker_sound_ids = { [416] = true, [11965] = true }, marker_sound_mode = "RANDOM", template_mode = "PARTY", auto_template_mode = false,
         role_template = { TANK = 8, HEALER = 3, DPS1 = 0, DPS2 = 0, DPS3 = 0 },
         raid_role_template = { TANK1 = 8, TANK2 = 7, TANK3 = 6, HEALER1 = 5, HEALER2 = 4, HEALER3 = 3, HEALER4 = 2, HEALER5 = 1 },
     },
@@ -56,20 +56,25 @@ local ns = {
     RAID_ROLE_SLOTS = { "TANK1", "TANK2", "TANK3", "HEALER1", "HEALER2", "HEALER3", "HEALER4", "HEALER5" },
     ROLE_SLOT_LABELS = { TANK = "Tank", HEALER = "Healer", DPS1 = "DPS 1", DPS2 = "DPS 2", DPS3 = "DPS 3" },
     MARKER_TEXTURES = { [1] = "star", [2] = "circle", [3] = "diamond", [4] = "triangle", [5] = "moon", [6] = "square", [7] = "cross", [8] = "skull" },
+    MARKER_SOUNDS = { { id = 416, name = "Murloc Aggro" }, { id = 11965, name = "A Horseman Laugh" }, { id = 888, name = "Level Up" } },
+    getSelectedMarkerSounds = function() return { { id = 416, name = "Murloc Aggro" }, { id = 11965, name = "A Horseman Laugh" } } end,
+    isMarkerSoundSelected = function(id) return id == 416 or id == 11965 end,
+    setMarkerSoundSelected = function() return true end,
+    initializeMarkerSoundSettings = function() end,
     getVersion = function() return "0.2.0-test" end,
     refreshPopup = function() end, applyVisibility = function() end, updateHandle = function() end, refreshMinimapButton = function() end,
     hidePopup = function() end, showPopup = function() end, notify = function() end,
 }
 
 assert(loadfile("Options/Shared.lua"))("CheckMark", ns)
-for _, path in ipairs({ "Options/CheckMark.lua", "Options/Markers.lua", "Options/Visibility.lua", "Options/Commands.lua", "Options/About.lua" }) do
+for _, path in ipairs({ "Options/CheckMark.lua", "Options/Markers.lua", "Options/Sounds.lua", "Options/Visibility.lua", "Options/Commands.lua", "Options/About.lua" }) do
     assert(loadfile(path))("CheckMark", ns)
 end
 ns.Options.BuildAll()
 equal(ns.Options.window.name, "CheckMarkSettingsFrame", "Salve-style movable settings window is constructed")
 local pageCount = 0
 for _ in pairs(ns.Options.pages) do pageCount = pageCount + 1 end
-equal(pageCount, 5, "five CheckMark-specific pages are constructed")
+equal(pageCount, 6, "six CheckMark-specific pages are constructed")
 ns.OpenOptions("Markers")
 equal(ns.Options.selectedPage, "Markers", "requested page opens")
 equal(ns.Options.window.shown, true, "settings window opens")

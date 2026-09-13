@@ -66,6 +66,7 @@ local DEFAULT_DB = {
     cell_columns            = 5,
     cell_spacing            = 1,
     show_cell_names         = false,
+    marker_sound_enabled    = true,
     role_template = {
         TANK   = 8,  -- Skull
         HEALER = 3,  -- Diamond
@@ -118,6 +119,7 @@ function ns.resetDB()
     CheckMarkDB = {}
     copyDefaults(CheckMarkDB)
     ns.db = CheckMarkDB
+    if ns.initializeMarkerSoundSettings then ns.initializeMarkerSoundSettings() end
     if ns.refreshOptions then ns.refreshOptions() end
     if ns.refreshPopup then ns.refreshPopup() end
     if ns.applyVisibility then ns.applyVisibility() end
@@ -192,6 +194,7 @@ core:SetScript("OnEvent", function(_, event, ...)
         local addonName = ...
         if addonName ~= addon then return end
         initDB()
+        if ns.initializeMarkerSoundSettings then ns.initializeMarkerSoundSettings() end
         if ns.Options and ns.Options.EnsureBuilt then ns.Options.EnsureBuilt() end
         if ns.onAddonLoaded then ns.onAddonLoaded() end
         if ns.createMinimapButton then ns.createMinimapButton() end

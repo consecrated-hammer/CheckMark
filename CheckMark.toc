@@ -1,7 +1,7 @@
 ## Interface: 120100
 ## Title: CheckMark
 ## Author: consecrated-hammer
-## Version: 1.0.0
+## Version: 1.1.0
 ## Notes: Pre-pull marker assignments for 2-5 player parties.
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
@@ -14,12 +14,14 @@
 Core.lua
 Templates.lua
 Marker.lua
+Sound.lua
 Theme.lua
 Minimap.lua
 UI.lua
 Options\Shared.lua
 Options\CheckMark.lua
 Options\Markers.lua
+Options\Sounds.lua
 Options\Visibility.lua
 Options\Commands.lua
 Options\About.lua

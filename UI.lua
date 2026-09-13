@@ -49,6 +49,12 @@ local function makeCell(parent, index)
     local cell = CreateFrame("Button", "CheckMarkCell" .. index, parent, "SecureActionButtonTemplate,BackdropTemplate")
     cell:SetAttribute("useOnKeyDown", false); cell:RegisterForClicks("AnyUp")
     cell:HookScript("PostClick", function(self, button)
+        -- The native secure raid-target action has just been submitted.  Keep
+        -- feedback on the left-click set action only: right click clears a
+        -- marker and an unassigned cell merely opens the marker settings.
+        if self.marker and self.marker > 0 and button == "LeftButton" and ns.playMarkerSound then
+            ns.playMarkerSound()
+        end
         if self.marker == 0 and button == "LeftButton" and ns.showOptions then ns.showOptions("Markers") end
     end)
     cell:HookScript("OnEnter", tooltip); cell:HookScript("OnLeave", function() if GameTooltip:IsOwned(cell) then GameTooltip:Hide() end end)
