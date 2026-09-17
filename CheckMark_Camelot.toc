@@ -1,16 +1,21 @@
-## Interface: 120100
-## Title: CheckMark
+## Interface: 16001
+## Title: CheckMark (Camelot Retail-Compatibility Preview)
 ## Author: consecrated-hammer
 ## Version: 1.1.1
-## Notes: Pre-pull marker assignments for 2-5 player parties.
+## Notes: Provisional Retail-style pre-pull marker assignments for Camelot.
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
 ## X-Source: https://github.com/consecrated-hammer/CheckMark
 ## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
+## X-CheckMark-Target: Camelot (provisional Retail-style compatibility)
+## X-ProvisionalInterface: 16001 is a provisional Forever beta target; verify it in the client.
 ## SavedVariables: CheckMarkDB
 ## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
+# Camelot is now assumed to inherit Retail-style in-combat addon restrictions.
+# Use the maintained protected-action and combat-deferral path verbatim; beta
+# must still prove that the native raid-target action remains available.
 Core.lua
 Templates.lua
 Marker.lua

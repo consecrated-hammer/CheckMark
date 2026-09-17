@@ -11,6 +11,9 @@ ignore:
   - .pkgmeta
   - .gitignore
   - .scratch
+  - CheckMark_Camelot.toc
+  - DEVELOPMENT.md
+  - tools
   - Art
   - tests
   - Build-CurseForgeZip.local.ps1

@@ -32,3 +32,14 @@ jobs:
         env:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      - name: Prepare Forever package
+        run: |
+          rm CheckMark.toc
+          mv CheckMark_Camelot.toc CheckMark.toc
+      - name: Package and publish Forever build
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -n "{package}-{version}-Forever"
+        env:
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}

@@ -20,3 +20,5 @@ ROADMAP.local.md
 RELEASE_NOTES.md
 
 .claude/
+__pycache__/
+*.pyc

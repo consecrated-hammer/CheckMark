@@ -67,6 +67,7 @@ local DEFAULT_DB = {
     cell_spacing            = 1,
     show_cell_names         = false,
     marker_sound_enabled    = true,
+    show_startup_message    = true,
     role_template = {
         TANK   = 8,  -- Skull
         HEALER = 3,  -- Diamond
@@ -198,6 +199,9 @@ core:SetScript("OnEvent", function(_, event, ...)
         if ns.Options and ns.Options.EnsureBuilt then ns.Options.EnsureBuilt() end
         if ns.onAddonLoaded then ns.onAddonLoaded() end
         if ns.createMinimapButton then ns.createMinimapButton() end
+        if ns.db.show_startup_message then
+            print("|cffffd200CheckMark:|r loaded — type |cffffd100/checkmark options|r for settings.")
+        end
 
     elseif event == "GROUP_ROSTER_UPDATE" then
         onGroupChanged()
@@ -245,6 +249,9 @@ SlashCmdList["CHECKMARK"] = function(msg)
     elseif msg == "reset" then
         ns.resetDB()
         ns.notify("Settings reset.")
+    elseif msg == "loadmsg on" or msg == "loadmsg off" then
+        ns.db.show_startup_message = msg == "loadmsg on"
+        print("|cffffd200CheckMark:|r load message " .. (ns.db.show_startup_message and "enabled." or "disabled."))
     else
         if ns.togglePopup then ns.togglePopup()
         else print("CheckMark: UI not ready.") end
