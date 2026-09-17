@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: CheckMark (Camelot Retail-Compatibility Preview)
 ## Author: consecrated-hammer
-## Version: 1.1.1
+## Version: 1.1.2
 ## Notes: Provisional Retail-style pre-pull marker assignments for Camelot.
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
