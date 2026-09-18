@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.4] - 2026-09-18
+
+### Changed
+
+- Identify the Camelot TOC as WoW Forever beta and declare the `camelot` load game type.
+
 ## [1.1.3] - 2026-09-18
 
 ### Fixed

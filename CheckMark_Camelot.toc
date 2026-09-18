@@ -1,19 +1,19 @@
 ## Interface: 16001
-## Title: CheckMark (Camelot Retail-Compatibility Preview)
+## Title: CheckMark (WoW Forever Beta)
 ## Author: consecrated-hammer
-## Version: 1.1.3
-## Notes: Provisional Retail-style pre-pull marker assignments for Camelot.
+## Version: 1.1.4
+## Notes: WoW Forever (Camelot) beta build using CheckMark's Mainline backend.
+## AllowLoadGameType: camelot
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
 ## X-Source: https://github.com/consecrated-hammer/CheckMark
 ## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
-## X-CheckMark-Target: Camelot (provisional Retail-style compatibility)
-## X-ProvisionalInterface: 16001 is a provisional Forever beta target; verify it in the client.
+## X-CheckMark-Target: Camelot
 ## SavedVariables: CheckMarkDB
 ## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
-# Camelot is now assumed to inherit Retail-style in-combat addon restrictions.
+# Camelot uses the Mainline API family and Retail-style in-combat addon restrictions.
 # Use the maintained protected-action and combat-deferral path verbatim; beta
 # must still prove that the native raid-target action remains available.
 Core.lua
