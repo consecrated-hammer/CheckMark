@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.3] - 2026-09-18
+
+### Fixed
+
+- Publish one package that CurseForge classifies for both Retail and WoW Forever.
+
 ## [1.1.2] - 2026-09-18
 
 ### Fixed

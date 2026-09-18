@@ -1,7 +1,7 @@
 ## Interface: 120100
 ## Title: CheckMark
 ## Author: consecrated-hammer
-## Version: 1.1.2
+## Version: 1.1.3
 ## Notes: Pre-pull marker assignments for 2-5 player parties.
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
