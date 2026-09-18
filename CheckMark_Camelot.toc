@@ -1,8 +1,8 @@
 ## Interface: 16001
-## Title: CheckMark (WoW Forever Beta)
+## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
-## Version: 1.1.4
-## Notes: WoW Forever (Camelot) beta build using CheckMark's Mainline backend.
+## Version: 1.1.5
+## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot
 ## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
@@ -14,8 +14,7 @@
 ## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
 # Camelot uses the Mainline API family and Retail-style in-combat addon restrictions.
-# Use the maintained protected-action and combat-deferral path verbatim; beta
-# must still prove that the native raid-target action remains available.
+# Use the maintained protected-action and combat-deferral path verbatim.
 Core.lua
 Templates.lua
 Marker.lua
