@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.6] - 2026-09-19
+
+### Fixed
+
+- Let minimap-button collectors such as MinimapButtonBag retain CheckMark's
+  icon in their collapsed menu after an add-on settings refresh.
+- Keep malformed saved data recoverable and make the diagnostic report identify
+  a minimap button that was never created.
+
+### Added
+
+- Add a copyable troubleshooting report and compatible early SavedVariables
+  loading for Retail and WoW Forever.
+
 ## [1.1.5] - 2026-09-18
 
 ### Changed

@@ -20,3 +20,4 @@ ignore:
   - CHANGELOG.md
   - README.md
   - Options.lua
+  - CheckMark_Leatrix.toc

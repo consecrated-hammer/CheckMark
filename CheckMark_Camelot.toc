@@ -1,16 +1,16 @@
 ## Interface: 16001
 ## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
-## Version: 1.1.5
+## Version: 1.1.6
 ## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot
-## Category-enUS: Raid
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
 ## X-Source: https://github.com/consecrated-hammer/CheckMark
 ## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
 ## X-CheckMark-Target: Camelot
 ## SavedVariables: CheckMarkDB
+## LoadSavedVariablesFirst: 1
 ## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
 # Camelot uses the Mainline API family and Retail-style in-combat addon restrictions.
@@ -28,4 +28,5 @@ Options\Markers.lua
 Options\Sounds.lua
 Options\Visibility.lua
 Options\Commands.lua
+Options\Troubleshooting.lua
 Options\About.lua

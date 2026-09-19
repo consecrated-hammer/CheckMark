@@ -74,13 +74,24 @@ function ns.createMinimapButton()
     end)
     ns.attachHint(button, "CheckMark", "Left-click: show or hide the pre-pull marker panel. Right-click: open settings. Drag to move this button around the minimap.")
     position()
-    button:SetShown(not (ns.db and ns.db.hide_minimap))
+    -- Button collectors such as MBB wrap Show/Hide to keep a collected icon
+    -- collapsed.  SetShown bypasses those wrappers and can make an icon escape
+    -- the bag on a later settings refresh.
+    if ns.db and ns.db.hide_minimap then
+        button:Hide()
+    else
+        button:Show()
+    end
     Minimap:HookScript("OnSizeChanged", position)
     return button
 end
 
 function ns.refreshMinimapButton()
     if not button then return end
-    button:SetShown(not (ns.db and ns.db.hide_minimap))
+    if ns.db and ns.db.hide_minimap then
+        button:Hide()
+    else
+        button:Show()
+    end
     position()
 end

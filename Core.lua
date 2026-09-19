@@ -1,5 +1,11 @@
 local addon, ns = ...
 
+-- Forever's loader demonstrably preserves Leatrix Plus's table when it is
+-- established during Lua loading.  Initialise our declared table at the same
+-- point, before any event can observe an absent database.
+ns.savedVariablesAtLuaLoad = type(CheckMarkDB) == "table"
+if type(CheckMarkDB) ~= "table" then CheckMarkDB = {} end
+
 local core = CreateFrame("Frame", addon.."Core")
 ns.core = core
 
@@ -92,8 +98,6 @@ local function copyDefaults(dest)
 end
 
 local function initDB()
-    if type(CheckMarkDB) ~= "table" then CheckMarkDB = nil end
-    CheckMarkDB = CheckMarkDB or {}
     local d = CheckMarkDB
 
     for k, v in pairs(DEFAULT_DB) do
@@ -252,6 +256,9 @@ SlashCmdList["CHECKMARK"] = function(msg)
     elseif msg == "loadmsg on" or msg == "loadmsg off" then
         ns.db.show_startup_message = msg == "loadmsg on"
         print("|cffffd200CheckMark:|r load message " .. (ns.db.show_startup_message and "enabled." or "disabled."))
+    elseif msg == "debug" or msg == "diagnostics" then
+        if ns.ShowDiagnosticReport then ns.ShowDiagnosticReport()
+        else print("CheckMark: diagnostics are not ready.") end
     else
         if ns.togglePopup then ns.togglePopup()
         else print("CheckMark: UI not ready.") end
