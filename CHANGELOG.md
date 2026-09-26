@@ -24,6 +24,9 @@
 
 ### Added
 
+- A lore quiz behind the "!" on the About page, or `/checkmark quiz`: five questions
+  suited to your client, class and race, with a verdict in chat.
+
 - **Check sounds** on the Sounds page, and `/checkmark sounds`, find marker
   sounds this client cannot play (WoW Forever lacks some Retail sounds).
   Missing sounds are marked, cannot be selected, and are never played.
