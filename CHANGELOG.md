@@ -22,6 +22,12 @@
   - Chat messages use the shared gold name prefix.
 - Clicking the tick in a multi-select menu now chooses it.
 
+### Added
+
+- **Check sounds** on the Sounds page, and `/checkmark sounds`, find marker
+  sounds this client cannot play (WoW Forever lacks some Retail sounds).
+  Missing sounds are marked, cannot be selected, and are never played.
+
 ### Removed
 
 - `/checkmark options`, `/checkmark reset`, `/checkmark loadmsg` and

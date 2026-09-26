@@ -52,6 +52,7 @@ local function buildReport()
         "Panel hidden: " .. yesNo(db.panel_hidden),
         "Visibility mode: " .. tostring(db.visibility_mode or "unknown"),
         "Marker sound: " .. yesNo(db.marker_sound_enabled),
+        "Sound check: " .. ns.markerSoundCheckSummary(),
         "Minimap button: " .. ((HC.State() or {}).minimap and "shown" or "hidden"),
         "Minimap stored angle: " .. tostring((HC.State() or {}).minimapAngle or "none"),
         "Minimap button: " .. (button and "created" or "not created"),
@@ -113,15 +114,17 @@ HC:Init({
     about = {
         note = "CHECKMARKER'S NOTE",
         tips = quips,
-        extra = function(panel, y)
-            local apply = HC.UI.Button(panel, 160, 22)
-            apply:SetPoint("TOPLEFT", HC.UI.PAD, y)
-            apply:SetText("Apply CheckMark")
-            apply:SetScript("OnClick", function() HC.Print(HC.Pages.NextTip()) end)
-            return y - 34
-        end,
+        action = "Apply CheckMark",
     },
 })
+
+HC.Commands:Add({ name = "sounds", section = "Sounds", help = "Find marker sounds this client lacks",
+    run = function()
+        local missing, reason = ns.checkMarkerSounds()
+        if not missing then return HC.Print(reason) end
+        HC.Print(ns.markerSoundCheckSummary())
+        if HC.Settings:IsShown() then HC.Settings:Select(HC.Settings.selected) end
+    end })
 
 HC.Commands:AddAction({ section = "Grid", usage = "Left-click a cell", help = "Apply that role's marker" })
 HC.Commands:AddAction({ section = "Grid", usage = "Right-click a cell", help = "Remove the marker from that member" })

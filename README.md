@@ -50,6 +50,7 @@ the pull, and right-click a configured cell to remove that person's marker.
 | `/checkmark reset settings` | Reset every setting after a confirmation |
 | `/checkmark toggle` | Show or hide the marker grid |
 | `/checkmark lock` / `unlock` | Hide or show the drag handle |
+| `/checkmark sounds` | Find marker sounds this client cannot play |
 
 Settings, commands, the minimap button and the reference pages come from
 [HammerCore](https://github.com/consecrated-hammer/HammerCore), shared by

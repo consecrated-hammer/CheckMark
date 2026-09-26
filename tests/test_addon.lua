@@ -94,6 +94,21 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     end
     equal(sawAction, true, toc .. ": grid actions are listed in help")
 
+    -- The sound check finds kits this client lacks and playback skips them.
+    PlaySound = function(id) return id ~= 114685 and id ~= 114684, 1 end
+    SlashCmdList.CHECKMARK("sounds")
+    equal(wow.LastPrint(), "CheckMark: 2 missing: Tyrande Greetings, Tyrande Farewells",
+        toc .. ": the sound check names missing sounds")
+    for _, sound in ipairs(ns.getSelectedMarkerSounds()) do
+        equal(sound.id ~= 114685 and sound.id ~= 114684, true, toc .. ": missing sounds are not played")
+    end
+    PlaySound = function() return false end
+    SlashCmdList.CHECKMARK("sounds")
+    equal(wow.LastPrint(), "CheckMark: no sound played; turn game sound on and check again",
+        toc .. ": sound off is not mistaken for missing sounds")
+    equal(ns.isMarkerSoundMissing(416), false, toc .. ": a failed check keeps the previous result")
+    PlaySound = function() return true end
+
     for _, old in ipairs({ "options", "reset", "loadmsg on", "diagnostics" }) do
         SlashCmdList.CHECKMARK(old)
         equal(wow.LastPrint(), "CheckMark: unknown command. Type /checkmark help for the list.",
