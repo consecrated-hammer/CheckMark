@@ -2,9 +2,12 @@
 ## Title: CheckMark
 ## Author: consecrated-hammer
 ## Version: 1.1.8
+## X-ReleaseDate: 2026-09-26
 ## Notes: Pre-pull marker assignments for 2-5 player parties.
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
+## X-CurseForge: https://www.curseforge.com/wow/addons/checkmark
+## X-License: GPL-3.0
 ## X-Source: https://github.com/consecrated-hammer/CheckMark
 ## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
 ## SavedVariables: CheckMarkDB

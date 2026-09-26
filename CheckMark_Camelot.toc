@@ -2,10 +2,13 @@
 ## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
 ## Version: 1.1.8
+## X-ReleaseDate: 2026-09-26
 ## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
+## X-CurseForge: https://www.curseforge.com/wow/addons/checkmark
+## X-License: GPL-3.0
 ## X-Source: https://github.com/consecrated-hammer/CheckMark
 ## X-Issues: https://github.com/consecrated-hammer/CheckMark/issues
 ## X-CheckMark-Target: Camelot
