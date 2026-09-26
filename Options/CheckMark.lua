@@ -1,28 +1,28 @@
 local addonName, ns = ...
-local O = ns.Options
+local HC = ns.HammerCore
+local O, T = HC.UI, HC.Theme
 
 local function section(parent)
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetSize(560, 1)
-    frame.salveRefresh = parent.salveRefresh
-    frame.salveRefreshAll = parent.salveRefreshAll
+    frame.hcRefresh = parent.hcRefresh
+    frame.hcRefreshAll = parent.hcRefreshAll
     return frame
 end
 local function refreshGrid() if ns.refreshPopup then ns.refreshPopup() end end
 
-O.NewPage({ name = "CheckMark", title = "Panel", group = "CORE", description = "Shape the compact five-player pre-pull marker grid." }, function(panel)
+HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", description = "Shape the compact five-player pre-pull marker grid." }, function(panel)
     local db = ns.db
-    local preview = panel.salveCreatePinned(164, 560)
+    local preview = panel.hcCreatePinned(164, 560)
     local py = -8
     _, py = O.Header(preview, "Preview", py)
     local stage = CreateFrame("Frame", nil, preview, "BackdropTemplate")
     stage:SetPoint("TOPLEFT", 16, py); stage:SetSize(528, 120)
-    stage:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-    stage:SetBackdropColor(unpack(O.theme.rail)); stage:SetBackdropBorderColor(unpack(O.theme.edge))
+    T.Surface(stage, "rail", "edge")
     local label = stage:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    label:SetPoint("TOPLEFT", 10, -8); label:SetText("LIVE PREVIEW"); label:SetTextColor(unpack(O.theme.muted))
+    label:SetPoint("TOPLEFT", 10, -8); label:SetText("LIVE PREVIEW"); label:SetTextColor(T.Unpack("muted"))
     local fit = stage:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    fit:SetPoint("TOPRIGHT", -10, -8); fit:SetTextColor(unpack(O.theme.muted))
+    fit:SetPoint("TOPRIGHT", -10, -8); fit:SetTextColor(T.Unpack("muted"))
     local markers, names, cells = { 8, 3, 6, 4, 5 }, { "Tank", "Healer", "DPS 1", "DPS 2", "DPS 3" }, {}
     for i = 1, 5 do
         local cell = CreateFrame("Frame", nil, stage, "BackdropTemplate")
@@ -42,7 +42,7 @@ O.NewPage({ name = "CheckMark", title = "Panel", group = "CORE", description = "
         for i, cell in ipairs(cells) do
             local n, col, row = i - 1, (i - 1) % columns, math.floor((i - 1) / columns)
             cell:ClearAllPoints(); cell:SetSize(shownW, shownH); cell:SetPoint("TOPLEFT", stage, "CENTER", left + col * (shownW + shownGap), top - row * (shownH + shownGap))
-            cell:SetBackdropColor(unpack(O.theme.content)); cell:SetBackdropBorderColor(unpack(O.theme.edge)); cell.icon:ClearAllPoints(); cell.name:ClearAllPoints()
+            cell:SetBackdropColor(T.Unpack("content")); cell:SetBackdropBorderColor(T.Unpack("edge")); cell.icon:ClearAllPoints(); cell.name:ClearAllPoints()
             local iconSize = math.max(10, math.floor((db.icon_size or 20) * scale + 0.5))
             if db.show_cell_names then
                 cell.icon:SetSize(iconSize, iconSize); cell.icon:SetPoint("LEFT", 2, 0); cell.name:SetPoint("LEFT", cell.icon, "RIGHT", 4, 0); cell.name:SetPoint("RIGHT", -3, 0); cell.name:SetJustifyH("LEFT"); cell.name:SetText(names[i])
@@ -50,18 +50,18 @@ O.NewPage({ name = "CheckMark", title = "Panel", group = "CORE", description = "
             cell.icon:SetTexture(ns.MARKER_TEXTURES[markers[i]])
         end
     end
-    preview.salveRefresh[#preview.salveRefresh + 1] = renderPreview; renderPreview()
+    preview.hcRefresh[#preview.hcRefresh + 1] = renderPreview; renderPreview()
 
     local presets = section(panel); local presetY = -8
     _, presetY = O.Header(presets, "Presets", presetY)
     local specs = { { "Compact", "20px cells\nno names", 20, 20, 20, 5, 1, false }, { "Named", "105px cells\nnames on", 105, 20, 20, 5, 1, true }, { "Oversized", "130×55px cells\n48px icons", 130, 55, 48, 5, 1, true } }
     for i, spec in ipairs(specs) do
-        local button = O.SelectButton(presets, 174, 58)
+        local button = O.Button(presets, 174, 58)
         button:SetPoint("TOPLEFT", 16 + (i - 1) * 180, presetY - 4); button:SetText(spec[1])
         button.Text:ClearAllPoints(); button.Text:SetPoint("TOPLEFT", 10, -7); button.Text:SetPoint("RIGHT", -10, 0); button.Text:SetJustifyH("LEFT")
         local note = button:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-        note:SetPoint("TOPLEFT", button.Text, "BOTTOMLEFT", 0, -2); note:SetText(spec[2]); note:SetTextColor(unpack(O.theme.muted)); note:SetJustifyH("LEFT")
-        button:SetScript("OnClick", function() db.cell_width, db.cell_height, db.icon_size, db.cell_columns, db.cell_spacing, db.show_cell_names = spec[3], spec[4], spec[5], spec[6], spec[7], spec[8]; refreshGrid(); presets.salveRefreshAll() end)
+        note:SetPoint("TOPLEFT", button.Text, "BOTTOMLEFT", 0, -2); note:SetText(spec[2]); note:SetTextColor(T.Unpack("muted")); note:SetJustifyH("LEFT")
+        button:SetScript("OnClick", function() db.cell_width, db.cell_height, db.icon_size, db.cell_columns, db.cell_spacing, db.show_cell_names = spec[3], spec[4], spec[5], spec[6], spec[7], spec[8]; refreshGrid(); presets.hcRefreshAll() end)
         O.AttachHint(button, spec[1], "Apply this grid shape.")
     end
     local presetsHeight = -presetY + 70

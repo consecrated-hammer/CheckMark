@@ -31,13 +31,29 @@ player-name macros.
 
 ## Getting started
 
-Type `/checkmark` or `/cm` in a small party. Set role markers in Settings,
-then left-click each planned person's compact assignment cell before the pull.
-Right-click a configured cell to remove that person's marker.
+Type `/checkmark` (or `/cm`) for settings and set role markers on the
+Markers page. In a small party, `/checkmark toggle` or right-clicking the
+minimap button shows the grid; left-click each planned person's cell before
+the pull, and right-click a configured cell to remove that person's marker.
 
-`/checkmark options` opens the Salve-style settings window, with the same
-navigation rail and controls but CheckMark-specific Panel, Markers and
-Visibility pages. `/checkmark reset` clears CheckMark's saved settings.
+| Command | Effect |
+| --- | --- |
+| `/checkmark` | Open settings |
+| `/checkmark help` | List every command and grid action |
+| `/checkmark version` | Print the loaded version and client |
+| `/checkmark about` | Open the About page |
+| `/checkmark debug` | Open a copyable diagnostic report |
+| `/checkmark startup [on\|off]` | Show the startup message |
+| `/checkmark minimap [on\|off]` | Show the minimap button |
+| `/checkmark theme [modern\|classic]` | Choose the settings theme |
+| `/checkmark reset position` | Move the grid back to the centre |
+| `/checkmark reset settings` | Reset every setting after a confirmation |
+| `/checkmark toggle` | Show or hide the marker grid |
+| `/checkmark lock` / `unlock` | Hide or show the drag handle |
+
+Settings, commands, the minimap button and the reference pages come from
+[HammerCore](https://github.com/consecrated-hammer/HammerCore), shared by
+every Consecrated Hammer addon and vendored under `Libs/HammerCore`.
 
 ## Limits worth stating plainly
 

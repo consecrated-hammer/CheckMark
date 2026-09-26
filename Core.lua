@@ -35,8 +35,10 @@ function ns.getVersion()
     return version or "development"
 end
 
+-- Chat output, settings, commands and the minimap button come from
+-- HammerCore (Libs/HammerCore); see Setup.lua.
 function ns.notify(msg)
-    print("|cffffd200CheckMark:|r "..tostring(msg or ""))
+    ns.HammerCore.Print(msg)
     if UIErrorsFrame then
         UIErrorsFrame:AddMessage("CheckMark: "..tostring(msg or ""), 1, 0.82, 0)
     end
@@ -63,8 +65,6 @@ local DEFAULT_DB = {
     popup_position          = nil,
     show_handle             = true,
     handle_position         = "TOP",
-    minimap_angle           = 225,
-    hide_minimap            = false,
     cell_width              = 20,
     cell_height             = 20,
     icon_size               = 20,
@@ -72,7 +72,6 @@ local DEFAULT_DB = {
     cell_spacing            = 1,
     show_cell_names         = false,
     marker_sound_enabled    = true,
-    show_startup_message    = true,
     role_template = {
         TANK   = 8,  -- Skull
         HEALER = 3,  -- Diamond
@@ -87,13 +86,6 @@ local function copyValue(value)
     local result = {}
     for key, child in pairs(value) do result[key] = copyValue(child) end
     return result
-end
-
-local function copyDefaults(dest)
-    for k in pairs(dest) do dest[k] = nil end
-    for k, v in pairs(DEFAULT_DB) do
-        dest[k] = copyValue(v)
-    end
 end
 
 local function initDB()
@@ -117,16 +109,6 @@ local function initDB()
     d.last_mode, d.name_templates, d.remembered_groups = nil, nil, nil
     d.popup_on_group_change, d.popup_on_instance_enter = nil, nil
     d.raid_role_template, d.template_mode, d.auto_template_mode, d.panel_settings = nil, nil, nil, nil
-end
-
-function ns.resetDB()
-    CheckMarkDB = {}
-    copyDefaults(CheckMarkDB)
-    ns.db = CheckMarkDB
-    if ns.initializeMarkerSoundSettings then ns.initializeMarkerSoundSettings() end
-    if ns.refreshOptions then ns.refreshOptions() end
-    if ns.refreshPopup then ns.refreshPopup() end
-    if ns.applyVisibility then ns.applyVisibility() end
 end
 
 -- ── Group helpers ──────────────────────────────────────────────────────────
@@ -199,12 +181,7 @@ core:SetScript("OnEvent", function(_, event, ...)
         if addonName ~= addon then return end
         initDB()
         if ns.initializeMarkerSoundSettings then ns.initializeMarkerSoundSettings() end
-        if ns.Options and ns.Options.EnsureBuilt then ns.Options.EnsureBuilt() end
-        if ns.onAddonLoaded then ns.onAddonLoaded() end
-        if ns.createMinimapButton then ns.createMinimapButton() end
-        if ns.db.show_startup_message then
-            print("|cffffd200CheckMark:|r loaded — type |cffffd100/checkmark options|r for settings.")
-        end
+        ns.HammerCore:Start()
 
     elseif event == "GROUP_ROSTER_UPDATE" then
         onGroupChanged()
@@ -217,10 +194,6 @@ core:SetScript("OnEvent", function(_, event, ...)
     elseif event == "ROLE_CHANGED_INFORM" then
         if ns.refreshPopup then ns.refreshPopup() end
 
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        -- The secure visibility driver hides the grid at combat start.
-        if ns.refreshMinimapButton then ns.refreshMinimapButton() end
-
     elseif event == "PLAYER_REGEN_ENABLED" then
         if ns.pendingMarkerRebuild then
             ns.pendingMarkerRebuild = false
@@ -229,37 +202,11 @@ core:SetScript("OnEvent", function(_, event, ...)
         end
         if ns.applyVisibility then ns.applyVisibility() end
         if ns.refreshPopup then ns.refreshPopup() end
-        if ns.refreshMinimapButton then ns.refreshMinimapButton() end
     end
 end)
 
 core:RegisterEvent("ADDON_LOADED")
 core:RegisterEvent("GROUP_ROSTER_UPDATE")
 core:RegisterEvent("PLAYER_ENTERING_WORLD")
-core:RegisterEvent("PLAYER_REGEN_DISABLED")
 core:RegisterEvent("PLAYER_REGEN_ENABLED")
 pcall(core.RegisterEvent, core, "ROLE_CHANGED_INFORM")
-
--- ── Slash commands ─────────────────────────────────────────────────────────
-
-SLASH_CHECKMARK1 = "/checkmark"
-SLASH_CHECKMARK2 = "/cm"
-SlashCmdList["CHECKMARK"] = function(msg)
-    msg = (msg or ""):lower():match("^%s*(.-)%s*$")
-    if msg == "options" or msg == "opt" then
-        if ns.showOptions then ns.showOptions()
-        else print("CheckMark: options panel not ready.") end
-    elseif msg == "reset" then
-        ns.resetDB()
-        ns.notify("Settings reset.")
-    elseif msg == "loadmsg on" or msg == "loadmsg off" then
-        ns.db.show_startup_message = msg == "loadmsg on"
-        print("|cffffd200CheckMark:|r load message " .. (ns.db.show_startup_message and "enabled." or "disabled."))
-    elseif msg == "debug" or msg == "diagnostics" then
-        if ns.ShowDiagnosticReport then ns.ShowDiagnosticReport()
-        else print("CheckMark: diagnostics are not ready.") end
-    else
-        if ns.togglePopup then ns.togglePopup()
-        else print("CheckMark: UI not ready.") end
-    end
-end

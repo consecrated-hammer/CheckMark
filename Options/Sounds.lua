@@ -1,5 +1,6 @@
 local addonName, ns = ...
-local O = ns.Options
+local HC = ns.HammerCore
+local O, T = HC.UI, HC.Theme
 
 local function soundItems()
     local items = {}
@@ -20,10 +21,10 @@ local function selectedSummary()
     return tostring(#sounds) .. " sounds selected"
 end
 
-O.NewPage({
+HC.Settings:NewPage({
     name = "Sounds",
     title = "Sounds",
-    group = "CORE",
+    group = "main",
     description = "Choose the optional sound played after applying a prepared marker.",
 }, function(panel, y)
     local heading

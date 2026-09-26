@@ -1,5 +1,33 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- CheckMark now uses HammerCore, the settings, command and chat foundation
+  shared by every Consecrated Hammer addon:
+  - `/checkmark` opens settings; the grid moves to `/checkmark toggle` and
+    to a right-click on the minimap button. A left-click on the minimap
+    button opens settings.
+  - The settings rail ends with Theme, Commands, Troubleshooting and About,
+    after a divider.
+  - "Show startup message" and "Show minimap button" are on Visibility.
+    Your existing choices, minimap position and settings position carry
+    over.
+  - The login message now reads `CheckMark v1.1.8 loaded - type /checkmark
+    for settings, /checkmark help for commands`.
+  - New commands: `help`, `version`, `about`, `debug`, `startup`,
+    `minimap`, `theme`, `reset position`, `reset settings`, `toggle`,
+    `lock` and `unlock`. Help and the Commands page also list grid actions.
+  - Chat messages use the shared gold name prefix.
+- Clicking the tick in a multi-select menu now chooses it.
+
+### Removed
+
+- `/checkmark options`, `/checkmark reset`, `/checkmark loadmsg` and
+  `/checkmark diagnostics`; use the bare command, `reset settings`,
+  `startup` and `debug`.
+
 ## [1.1.8] - 2026-09-26
 
 ### Changed

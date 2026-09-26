@@ -15,18 +15,15 @@
 
 # Camelot uses the Mainline API family and Retail-style in-combat addon restrictions.
 # Use the maintained protected-action and combat-deferral path verbatim.
+Libs\HammerCore\HammerCore.xml
 Core.lua
+Setup.lua
 Templates.lua
 Marker.lua
 Sound.lua
 Theme.lua
-Minimap.lua
 UI.lua
-Options\Shared.lua
 Options\CheckMark.lua
 Options\Markers.lua
 Options\Sounds.lua
 Options\Visibility.lua
-Options\Commands.lua
-Options\Troubleshooting.lua
-Options\About.lua

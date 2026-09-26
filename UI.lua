@@ -55,7 +55,7 @@ local function makeCell(parent, index)
         if self.marker and self.marker > 0 and button == "LeftButton" and ns.playMarkerSound then
             ns.playMarkerSound()
         end
-        if self.marker == 0 and button == "LeftButton" and ns.showOptions then ns.showOptions("Markers") end
+        if self.marker == 0 and button == "LeftButton" then ns.HammerCore.Settings:Show("Markers") end
     end)
     cell:HookScript("OnEnter", tooltip); cell:HookScript("OnLeave", function() if GameTooltip:IsOwned(cell) then GameTooltip:Hide() end end)
 
@@ -120,7 +120,7 @@ local function buildHandle()
     handle:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self.dragging = true; panel:StartMoving() end end)
     handle:SetScript("OnDragStop", function(self) if self.dragging and not InCombatLockdown() then self.dragging = nil; panel:StopMovingOrSizing(); savePosition() end end)
     handle:RegisterForClicks("RightButtonUp")
-    handle:SetScript("OnClick", function(_, button) if button == "RightButton" then ns.showOptions() end end)
+    handle:SetScript("OnClick", function(_, button) if button == "RightButton" then ns.HammerCore.Settings:Toggle() end end)
     handle:HookScript("OnEnter", function(self) self.tex:SetColorTexture(1, 0.82, 0.26, 1); GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText("CheckMark"); GameTooltip:AddLine("Drag: move the grid", 0.85, 0.85, 0.85); GameTooltip:AddLine("Right-click: settings", 0.85, 0.85, 0.85); GameTooltip:Show() end)
     handle:HookScript("OnLeave", function(self) self.tex:SetColorTexture(0.58, 0.43, 0.22, 0.85); GameTooltip:Hide() end)
 end
@@ -195,4 +195,3 @@ function ns.togglePopup()
         ns.applyVisibility()
     end
 end
-function ns.onAddonLoaded() if ns.refreshMinimapButton then ns.refreshMinimapButton() end end

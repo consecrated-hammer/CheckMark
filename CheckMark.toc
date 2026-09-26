@@ -11,18 +11,15 @@
 ## LoadSavedVariablesFirst: 1
 ## IconTexture: Interface\AddOns\CheckMark\Textures\CheckMark
 
+Libs\HammerCore\HammerCore.xml
 Core.lua
+Setup.lua
 Templates.lua
 Marker.lua
 Sound.lua
 Theme.lua
-Minimap.lua
 UI.lua
-Options\Shared.lua
 Options\CheckMark.lua
 Options\Markers.lua
 Options\Sounds.lua
 Options\Visibility.lua
-Options\Commands.lua
-Options\Troubleshooting.lua
-Options\About.lua
