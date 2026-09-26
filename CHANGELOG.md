@@ -9,7 +9,7 @@
   - `/checkmark` opens settings; the grid moves to `/checkmark toggle` and
     to a right-click on the minimap button. A left-click on the minimap
     button opens settings.
-  - The settings rail ends with Theme, Commands, Troubleshooting and About,
+  - The settings rail ends with Commands, Troubleshooting and About,
     after a divider.
   - "Show startup message" and "Show minimap button" are on Visibility.
     Your existing choices, minimap position and settings position carry
@@ -17,15 +17,12 @@
   - The login message now reads `CheckMark v1.1.8 loaded - type /checkmark
     for settings, /checkmark help for commands`.
   - New commands: `help`, `version`, `about`, `debug`, `startup`,
-    `minimap`, `theme`, `reset position`, `reset settings`, `toggle`,
+    `minimap`, `reset position`, `reset settings`, `toggle`,
     `lock` and `unlock`. Help and the Commands page also list grid actions.
   - Chat messages use the shared gold name prefix.
 - Clicking the tick in a multi-select menu now chooses it.
 
 ### Added
-
-- A **Classic** settings theme, Blizzard's 2004 look, on the Theme page or
-  with `/checkmark theme classic` (applies after a reload).
 
 - A lore quiz behind the "!" on the About page, or `/checkmark quiz`: five questions
   suited to your client, class and race, with a verdict in chat.

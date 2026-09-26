@@ -45,7 +45,6 @@ the pull, and right-click a configured cell to remove that person's marker.
 | `/checkmark debug` | Open a copyable diagnostic report |
 | `/checkmark startup [on\|off]` | Show the startup message |
 | `/checkmark minimap [on\|off]` | Show the minimap button |
-| `/checkmark theme [modern\|classic]` | Choose the settings theme |
 | `/checkmark reset position` | Move the grid back to the centre |
 | `/checkmark reset settings` | Reset every setting after a confirmation |
 | `/checkmark toggle` | Show or hide the marker grid |
