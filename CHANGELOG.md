@@ -24,6 +24,9 @@
 
 ### Added
 
+- A **Classic** settings theme, Blizzard's 2004 look, on the Theme page or
+  with `/checkmark theme classic` (applies after a reload).
+
 - A lore quiz behind the "!" on the About page, or `/checkmark quiz`: five questions
   suited to your client, class and race, with a verdict in chat.
 
