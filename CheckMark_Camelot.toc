@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
-## Version: 1.1.8
+## Version: 1.2.0
 ## X-ReleaseDate: 2026-09-26
 ## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot

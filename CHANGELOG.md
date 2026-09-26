@@ -2,40 +2,41 @@
 
 ## [Unreleased]
 
-### Changed
-
-- CheckMark now uses HammerCore, the settings, command and chat foundation
-  shared by every Consecrated Hammer addon:
-  - `/checkmark` opens settings; the grid moves to `/checkmark toggle` and
-    to a right-click on the minimap button. A left-click on the minimap
-    button opens settings.
-  - The settings rail ends with Commands, Troubleshooting and About,
-    after a divider.
-  - "Show startup message" and "Show minimap button" are on Visibility.
-    Your existing choices, minimap position and settings position carry
-    over.
-  - The login message now reads `CheckMark v1.1.8 loaded - type /checkmark
-    for settings, /checkmark help for commands`.
-  - New commands: `help`, `version`, `about`, `debug`, `startup`,
-    `minimap`, `reset position`, `reset settings`, `toggle`,
-    `lock` and `unlock`. Help and the Commands page also list grid actions.
-  - Chat messages use the shared gold name prefix.
-- Clicking the tick in a multi-select menu now chooses it.
+## [1.2.0] - 2026-09-26
 
 ### Added
 
-- A lore quiz behind the "!" on the About page, or `/checkmark quiz`: five questions
-  suited to your client, class and race, with a verdict in chat.
-
-- **Check sounds** on the Sounds page, and `/checkmark sounds`, find marker
+- A lore quiz: the quest "!" on the About page, or `/checkmark quiz`, asks five
+  questions suited to your client, class and race. **Share result** posts
+  the verdict to yourself, Say or Party in one click; it is unavailable in
+  combat and during keys, PvP matches and encounters.
+- **Check sounds** on the Sounds page, or `/checkmark sounds`, finds marker
   sounds this client cannot play (WoW Forever lacks some Retail sounds).
-  Missing sounds are marked, cannot be selected, and are never played.
+  Missing sounds are marked, cannot be chosen, and are never played.
+- New commands: `help`, `version`, `about`, `debug`, `startup`, `minimap`,
+  `reset position`, `reset settings`, `toggle`, `lock` and `unlock`. Help and
+  the Commands page also list the grid's mouse actions.
+
+### Changed
+
+- CheckMark now uses HammerCore, the settings, command and chat foundation shared
+  by every Consecrated Hammer addon. The login message reads
+  `CheckMark v1.2.0 loaded - type /checkmark for settings, /checkmark help for commands`, chat uses
+  a gold name prefix, and `/checkmark help` lists every command.
+- `/checkmark` opens settings. The grid is `/checkmark toggle` or a
+  right-click on the minimap button; left-click opens settings.
+- Settings: Panel, Markers, Sounds and Visibility, then Commands,
+  Troubleshooting and About. "Show startup message" and "Show minimap button"
+  are on Visibility; existing choices carry over.
 
 ### Removed
 
-- `/checkmark options`, `/checkmark reset`, `/checkmark loadmsg` and
-  `/checkmark diagnostics`; use the bare command, `reset settings`,
-  `startup` and `debug`.
+- `/checkmark options`, `reset`, `loadmsg` and `diagnostics`; use the bare
+  command, `reset settings`, `startup` and `debug`.
+
+### Fixed
+
+- Clicking the tick in a dropdown menu now chooses it.
 
 ## [1.1.8] - 2026-09-26
 
