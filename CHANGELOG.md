@@ -1,10 +1,16 @@
 # Changelog
 
+## [1.1.8] - 2026-09-26
+
+### Changed
+
+- Remove an obsolete exploratory reference from the packaged release notes.
+
 ## [1.1.7] - 2026-09-26
 
 ### Changed
 
-- Remove the exploratory Leatrix staging mode and its packaging reference.
+- Remove the exploratory staging mode and its packaging reference.
 - Clarify the SavedVariables initialization comment.
 
 ## [1.1.6] - 2026-09-19
