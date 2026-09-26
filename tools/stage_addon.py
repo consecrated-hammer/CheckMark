@@ -21,7 +21,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dev", action="store_true", help="stamp the staged TOC with an incrementing -dev-N version")
     parser.add_argument("--keep-toc-name", action="store_true", help="preserve the selected TOC filename (for game-type TOCs such as _Camelot)")
     parser.add_argument("--omit-game-gate", action="store_true", help="remove AllowLoadGameType from the staged TOC for compatibility testing")
-    parser.add_argument("--leatrix-style", action="store_true", help="stage a minimal generic Forever TOC matching Leatrix Plus's proven shape")
     return parser.parse_args()
 
 def staged_version(source_toc: Path, existing_toc: Path, enabled: bool) -> str | None:
@@ -34,23 +33,6 @@ def staged_version(source_toc: Path, existing_toc: Path, enabled: bool) -> str |
         previous = re.search(r"^## Version:\s*" + re.escape(base) + r"-dev-(\d+)\s*$", existing_toc.read_text(encoding="utf-8"), re.MULTILINE)
         if previous: number = int(previous.group(1)) + 1
     return f"{base}-dev-{number}"
-
-def leatrix_style_toc(source_toc: Path, addon_name: str) -> str:
-    source = source_toc.read_text(encoding="utf-8")
-    def metadata(name: str) -> str | None:
-        match = re.search(r"^## " + re.escape(name) + r":\s*(.+?)\s*$", source, re.MULTILINE)
-        return match.group(1) if match else None
-    saved = metadata("SavedVariables") or metadata("SavedVariablesPerCharacter")
-    if not saved: raise SystemExit(f"TOC has no SavedVariables declaration: {source_toc}")
-    files = [line for line in source.splitlines() if line.strip() and not line.startswith("#")]
-    files = [line for line in files if not line.startswith("##")]
-    headers = ["## Interface: 16001", "", f"## Title: {addon_name}"]
-    for key in ("Notes", "Version", "Author"):
-        if value := metadata(key): headers.append(f"## {key}: {value}")
-    headers.extend([f"## SavedVariables: {saved}" if metadata("SavedVariables") else f"## SavedVariablesPerCharacter: {saved}", "## LoadSavedVariablesFirst: 1"])
-    if icon := metadata("IconTexture"): headers.append(f"## IconTexture: {icon}")
-    headers.extend(line for line in source.splitlines() if line.startswith("## X-"))
-    return "\n".join(headers + [""] + files) + "\n"
 
 def should_copy(relative_path: Path) -> bool:
     return not (any(part in EXCLUDED_DIRECTORIES for part in relative_path.parts[:-1]) or relative_path.name in EXCLUDED_NAMES or relative_path.suffix.lower() in EXCLUDED_SUFFIXES or relative_path.suffix.lower() == ".toc")
@@ -80,8 +62,7 @@ def main() -> int:
             if should_copy(relative):
                 target = destination / relative; target.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(path, target)
     staged_toc = destination / installed_toc_name
-    if args.leatrix_style: staged_toc.write_text(leatrix_style_toc(toc, args.addon_name), encoding="utf-8")
-    else: shutil.copy2(toc, staged_toc)
+    shutil.copy2(toc, staged_toc)
     if dev_version:
         staged_toc.write_text(re.sub(r"^## Version:\s*.+?$", f"## Version: {dev_version}", staged_toc.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
     if args.omit_game_gate:

@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
-## Version: 1.1.6
+## Version: 1.1.7
 ## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot
 ## X-Curse-Project-ID: 1673005

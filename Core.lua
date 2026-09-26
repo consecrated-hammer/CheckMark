@@ -1,8 +1,7 @@
 local addon, ns = ...
 
--- Forever's loader demonstrably preserves Leatrix Plus's table when it is
--- established during Lua loading.  Initialise our declared table at the same
--- point, before any event can observe an absent database.
+-- Record whether saved data was available at Lua load, then ensure event
+-- handlers always have a table to read.
 ns.savedVariablesAtLuaLoad = type(CheckMarkDB) == "table"
 if type(CheckMarkDB) ~= "table" then CheckMarkDB = {} end
 
