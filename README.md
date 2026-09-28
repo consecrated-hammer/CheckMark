@@ -1,72 +1,52 @@
 # CheckMark
 
-**A compact pre-pull marker grid for small WoW parties.** It uses Salve-style
-cells: configure role markers in Settings, then click each planned person's
-small cell before the pull.
+**Pre-pull raid markers for parties.**
 
-## Why CheckMark exists
+_Skull on the tank, every time._
 
-Raid target markers still need a protected player action. CheckMark makes the
-pre-pull setup quick without pretending it can mark a party automatically.
-Each cell prepares one safe action using the party's stable unit token, not
-player-name macros.
+[![Discord](https://img.shields.io/badge/discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/z3xKxRygDc) [![Retail](https://img.shields.io/badge/retail-supported-4c9a7a?style=flat-square)](https://www.curseforge.com/wow/addons/checkmark) [![WoW Forever](https://img.shields.io/badge/wow%20forever-supported-4c9a7a?style=flat-square)](https://www.curseforge.com/wow/addons/checkmark) [![Release](https://img.shields.io/github/v/release/consecrated-hammer/CheckMark?style=flat-square&color=4c9a7a&label=release)](https://github.com/consecrated-hammer/CheckMark/releases) [![License](https://img.shields.io/badge/license-GPL--3.0-4c9a7a?style=flat-square)](https://github.com/consecrated-hammer/CheckMark/blob/main/LICENSE.txt)
+
+Questions, bugs or ideas? Come say hi on the [Consecrated Hammer Discord](https://discord.gg/z3xKxRygDc). Bug reports go in `#bug-reports`, or you can open a [GitHub issue](https://github.com/consecrated-hammer/CheckMark/issues).
+
+---
+
+CheckMark makes the bit of marker admin before a pull quick. Pick a marker for each role once, then before the pull click each party member's small cell to put their marker on them. It's deliberately a prep tool, so it doesn't mark anyone automatically, doesn't work in combat, and doesn't guess what markers other players have already set.
+
+![Live panel](https://media.forgecdn.net/attachments/1903/717/live-panel-dev43-png.png)
 
 ## What it does
 
-- Works with two-to-five-player parties, including dungeons and delves.
-- Uses role-template defaults such as Tank = Skull and Healer = Diamond.
-- Shows the configured plan only. CheckMark deliberately does not infer whether
-  another player has added, removed, or changed a current marker.
-- Lets you choose Star, Circle, Diamond, Triangle, Moon, Square, Cross, Skull
-  or None. Markers are kept unique.
-- Uses Salve-like direct action cells: click a planned party member to send
-  that member's configured marker; right-click removes that member's current
-  marker. Cells without a plan cannot send an action.
-- Includes a movable minimap launcher: left-click shows or hides the grid and
-  right-click opens Settings. The small handle above the grid drags it;
-  right-clicking that handle opens Settings.
-- Has Salve-style visibility settings: **Always outside combat** shows the
-  grid for an eligible party and hides it through a secure state driver the
-  moment combat starts; **Hidden** keeps it off.
+- **Role markers.** Set a marker for Tank, Healer and three DPS slots, such as Tank = Skull and Healer = Diamond. Markers stay unique, so picking one another role already has moves it over.
+- **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
+- **Two to five players**, in normal parties, follower dungeons, dungeons and delves.
+- **Marker sounds.** Clicking a cell can play a sound. On WoW Forever some Retail sounds don't exist, so CheckMark marks those as missing and never plays them.
+- **Your layout.** Cells per row, spacing, cell size and icon size are all adjustable. Widen the cells to 95 or more and member names fit too.
 
 ## Getting started
 
-Type `/checkmark` (or `/cm`) for settings and set role markers on the
-Markers page. In a small party, `/checkmark toggle` or right-clicking the
-minimap button shows the grid; left-click each planned person's cell before
-the pull, and right-click a configured cell to remove that person's marker.
+Install, then type `/checkmark` (or `/cm`) for settings and set your role markers on the **Markers** page.
 
-| Command | Effect |
+In a party, `/checkmark toggle` or right-clicking the minimap button shows the grid. Left-click each cell before the pull. Drag the small handle above the grid to move it, and right-click the handle to open settings.
+
+## Commands
+
+| Command | What it does |
 | --- | --- |
-| `/checkmark` | Open settings |
-| `/checkmark help` | List every command and grid action |
-| `/checkmark version` | Print the loaded version and client |
-| `/checkmark about` | Open the About page |
-| `/checkmark debug` | Open a copyable diagnostic report |
-| `/checkmark startup [on\|off]` | Show the startup message |
-| `/checkmark minimap [on\|off]` | Show the minimap button |
-| `/checkmark reset position` | Move the grid back to the centre |
-| `/checkmark reset settings` | Reset every setting after a confirmation |
+| `/checkmark` or `/cm` | Open settings |
 | `/checkmark toggle` | Show or hide the marker grid |
 | `/checkmark lock` / `unlock` | Hide or show the drag handle |
-| `/checkmark sounds` | Find marker sounds this client cannot play |
+| `/checkmark reset position` | Move the grid back to the centre |
+| `/checkmark sounds` | Find marker sounds this client can't play |
 
-Settings, commands, the minimap button and the reference pages come from
-[HammerCore](https://github.com/consecrated-hammer/HammerCore), shared by
-every Consecrated Hammer addon and vendored under `Libs/HammerCore`.
+Every Consecrated Hammer addon also has `help`, `version`, `about`, `debug`, `startup`, `minimap`, `reset settings` and `quiz`.
 
-## Limits worth stating plainly
+## Limits
 
-- **Markers need your click and permission.** Each click sends one prepared
-  marker. Only a party leader or assistant can apply markers where Blizzard
-  requires that authority.
-- **The plan is not a readback.** WoW does not give CheckMark a reliable,
-  usable view of another player's current marker, so it never claims one.
-- **Prep before the pull.** CheckMark is unavailable in combat and never
-  applies markers because the group roster changed.
-- **Six-plus-player raids are intentionally out of scope.**
+- **Markers need your click and permission.** Each click puts on one marker, and where Blizzard requires it you need to be party leader or assistant.
+- **It shows your plan, not what's actually marked.** WoW doesn't give addons a reliable view of other players' markers, so CheckMark doesn't pretend to know.
+- **Out of combat only.** The grid hides when combat starts, and CheckMark never re-marks people when the group changes.
+- **Parties only.** Raids of six or more are out of scope.
 
-## Support
+## Licence
 
-Bug reports, ideas and questions: the [Consecrated Hammer Discord](https://discord.gg/z3xKxRygDc)
-(`#bug-reports`, `#suggestions`, `#help`).
+GPL v3, see [LICENSE.txt](https://github.com/consecrated-hammer/CheckMark/blob/main/LICENSE.txt).
