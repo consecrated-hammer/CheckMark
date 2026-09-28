@@ -65,3 +65,8 @@ every Consecrated Hammer addon and vendored under `Libs/HammerCore`.
 - **Prep before the pull.** CheckMark is unavailable in combat and never
   applies markers because the group roster changed.
 - **Six-plus-player raids are intentionally out of scope.**
+
+## Support
+
+Bug reports, ideas and questions: the [Consecrated Hammer Discord](https://discord.gg/z3xKxRygDc)
+(`#bug-reports`, `#suggestions`, `#help`).
