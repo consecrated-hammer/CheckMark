@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-14
+
+### Changed
+
+- Support Retail 12.1.5 (interface `120105`).
+
 ## [1.2.0] - 2026-09-26
 
 ### Added
