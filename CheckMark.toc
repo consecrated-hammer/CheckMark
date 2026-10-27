@@ -1,8 +1,8 @@
 ## Interface: 120105
 ## Title: CheckMark
 ## Author: consecrated-hammer
-## Version: 1.2.1
-## X-ReleaseDate: 2026-10-14
+## Version: 1.2.2
+## X-ReleaseDate: 2026-10-28
 ## Notes: Pre-pull marker assignments for 2-5 player parties.
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark
