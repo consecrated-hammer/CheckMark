@@ -4,6 +4,13 @@ local HC = ns.HammerCore
 -- Declares CheckMark to HammerCore: commands, grid actions, the minimap
 -- right-click, status, diagnostics and About content.
 
+-- The header button on pages whose settings change how the grid looks.
+ns.LivePreviewAction = {
+    text = function() return ns.Preview:IsShown() and "Hide live preview" or "Show live preview" end,
+    onClick = function() ns.Preview:Toggle() end,
+    hint = "An actual-size preview of the grid with a sample party, in its own window. Drag it anywhere; it stays open while you change pages.",
+}
+
 local quips = {
     "All marked up. Try not to make it a personality.",
     "A skull for the tank. Classic for a reason.",
@@ -52,6 +59,8 @@ local function buildReport()
         "Panel hidden: " .. yesNo(db.panel_hidden),
         "Visibility mode: " .. tostring(db.visibility_mode or "unknown"),
         "Marker sound: " .. yesNo(db.marker_sound_enabled),
+        "Mark reminder: " .. (db.remind_enabled and "on" or "off") .. (ns.Reminder and ns.Reminder.lastReason
+            and (", last: " .. ns.Reminder.lastReason) or ""),
         "Sound check: " .. ns.markerSoundCheckSummary(),
         "Minimap button: " .. ((HC.State() or {}).minimap and "shown" or "hidden"),
         "Minimap stored angle: " .. tostring((HC.State() or {}).minimapAngle or "none"),
@@ -70,6 +79,38 @@ local function setHandle(shown)
     if ns.updateHandle then ns.updateHandle() end
     HC.Print("drag handle " .. (shown and "shown" or "hidden"))
 end
+
+-- Highlights for HammerCore's What's new page, newest first. Every
+-- CurseForge release gets an entry, fixes included (Kevin, 2026-11-09);
+-- HammerCore's tools/whatsnew_check.py fails the release without one. A
+-- `page` adds a link to that settings page.
+local WHATS_NEW = {
+    { version = "1.3.0", date = "2026-11-09", items = {
+        { title = "Mark reminder", text = "Join a party and CheckMark nudges you to mark everyone. Choose when and how on the Reminder page, or turn it off.",
+            page = "Reminder" },
+        { title = "Live preview", text = "Show live preview at the top of Panel and Markers draws your grid at actual size with a sample party, in its own window.",
+            kind = "improved", page = "CheckMark" },
+        { title = "Show rules", text = "Show the grid only in dungeons, delves, the open world or when you lead. Tick any mix on Visibility.",
+            page = "Visibility" },
+        { title = "More sounds", text = "New marker sounds, Select all and Deselect all, and each client only lists sounds it can play.",
+            kind = "improved", page = "Sounds" },
+        { title = "A fresh coat of paint", text = "Settings got a new look: two columns, switches, marker icons on every heading, and this What's new page.",
+            kind = "improved" },
+        { title = "Support links", text = "CurseForge, Discord and Buy me a coffee sit at the bottom of the settings window. Hide them on Visibility.",
+            kind = "improved", page = "Visibility" },
+    } },
+    -- History: written after the fact for releases from before What's new.
+    { version = "1.2.0", date = "2026-09-26", history = true, items = {
+        { text = "Check sounds finds marker sounds your client can't play.", page = "Sounds" },
+        "A lore quiz, and the same commands and settings layout as every Consecrated Hammer addon.",
+    } },
+    { version = "1.1.0", date = "2026-09-13", history = true, items = {
+        { text = "Marker sounds: pick from the catalogue, random or in order.", page = "Sounds" },
+    } },
+    { version = "1.0.0", date = "2026-08-29", history = true, items = {
+        "Role markers and one cell per party member: click to mark before the pull.",
+    } },
+}
 
 HC:Init({
     name = "CheckMark",
@@ -111,6 +152,11 @@ HC:Init({
         }, "\n")
     end,
     diagnostics = buildReport,
+    onSettingsShown = function()
+        if ns.db.preview_window_open then ns.Preview:Show() end
+    end,
+    onSettingsHidden = function() ns.Preview:Hide() end,
+    whatsNew = WHATS_NEW,
     about = {
         note = "CHECKMARKER'S NOTE",
         tips = quips,

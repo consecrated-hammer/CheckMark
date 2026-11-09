@@ -1,6 +1,34 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.0] - 2026-11-09
+
+### Added
+
+- **Mark reminder.** Join a party and CheckMark gives you a nudge to mark
+  everyone before the pull. Pick when it fires (joining a party, someone new
+  joining, only as leader) and how (chat, an on-screen message, a sound) on
+  the new **Reminder** page, or switch it off. It follows the grid's Show
+  rules, so it waits until the grid can show, and it never fires mid-fight;
+  it waits politely until the dust settles.
+- **Live preview window.** **Show live preview** at the top of Panel and
+  Markers draws your grid at actual size with a sample party, drag handle
+  included, in its own window. It stays open while you hop between pages,
+  and redraws as you change things. Turn on **Open with settings** to have
+  it pop up every time; **Keep in front** keeps it above the settings.
+- **Show the grid when you want it.** Visibility → Show can now tick rules:
+  in a dungeon, in a delve or scenario, in the open world, or as party
+  leader. Any match shows the grid; Always and Never still work.
+- **More sounds, and only the ones you can hear.** New marker sounds: Ready
+  Check, Raid Warning, Quest Complete, PvP Queue Ready, Party Invite and
+  Auction House Open, plus Whisper on Retail. WoW Forever no longer lists
+  Retail-only sounds, and **Select all** / **Deselect all** sit under the
+  list.
+- **A fresh coat of paint.** Settings match the other Consecrated Hammer
+  addons: a cleaner header, two columns, proper switches, a raid marker on
+  every heading and a Window scale slider.
+- **What's new.** A page under REFERENCE with every release's highlights.
+- **Support links.** CurseForge, Discord and Buy me a coffee in the footer.
+  Hide them on Visibility.
 
 ## [1.2.2] - 2026-10-28
 

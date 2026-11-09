@@ -13,8 +13,8 @@ local function markerDropdown(panel, slot, y, template, slots)
     local db = ns.db
     local row = O.Row(panel, y, 34, ns.ROLE_SLOT_LABELS[slot],
         "Choose this role's marker. Selecting an icon already used elsewhere removes it from that role.")
-    local button = O.SelectButton(row, 188, 28)
-    button:SetPoint("LEFT", row, "LEFT", 128, 0)
+    local button = O.SelectButton(row, 140, 28)
+    button:SetPoint("RIGHT", row, "RIGHT", -O.CELL_INSET, 0)
     -- HammerCore's select draws the chevron; make room for the marker icon.
     button.Text:ClearAllPoints()
     button.Text:SetPoint("LEFT", 34, 0)
@@ -120,7 +120,7 @@ local function markerDropdown(panel, slot, y, template, slots)
     O.AttachHint(button, ns.ROLE_SLOT_LABELS[slot], "Choose a marker. Markers remain unique across the role template.")
     panel.hcRefresh[#panel.hcRefresh + 1] = render
     render()
-    return row, y - 38
+    return row, row.hcNextY
 end
 
 HC.Settings:NewPage({
@@ -128,14 +128,15 @@ HC.Settings:NewPage({
     title = "Markers",
     group = "main",
     description = "Choose the marker each role's cell prepares.",
+    headerAction = ns.LivePreviewAction,
 }, function(panel, y)
     local db = ns.db
-    _, y = O.Header(panel, "Party assignments", y)
+    _, y = O.Header(panel, "Party assignments", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8")
     _, y = O.Text(panel, "Markers stay unique: assigning one to a role removes it from another.", y)
     for _, slot in ipairs(ns.ROLE_SLOTS) do
         _, y = markerDropdown(panel, slot, y, db.role_template, ns.ROLE_SLOTS)
     end
-    _, y = O.PageReset(panel, y - 8, function()
+    _, y = O.PageReset(panel, y, function()
         db.role_template = { TANK = 8, HEALER = 3, DPS1 = 0, DPS2 = 0, DPS3 = 0 }
         refreshGrid()
     end, "Reset markers")

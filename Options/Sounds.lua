@@ -4,14 +4,15 @@ local O, T = HC.UI, HC.Theme
 
 local function soundItems()
     local items = {}
+    -- Only sounds this client has: the catalogue is already per client, and
+    -- anything Check sounds found missing stays out of the list.
     for _, sound in ipairs(ns.MARKER_SOUNDS) do
         local id, name = sound.id, sound.name
-        items[#items + 1] = {
-            label = function() return ns.isMarkerSoundMissing(id) and (name .. " (missing)") or name end,
-            disabled = function() return ns.isMarkerSoundMissing(id) end,
+        if not ns.isMarkerSoundMissing(id) then items[#items + 1] = {
+            label = name,
             get = function() return ns.isMarkerSoundSelected(id) end,
             set = function(selected) ns.setMarkerSoundSelected(id, selected) end,
-        }
+        } end
     end
     return items
 end
@@ -29,7 +30,7 @@ HC.Settings:NewPage({
     description = "Choose the optional sound played after applying a prepared marker.",
 }, function(panel, y)
     local heading
-    heading, y = O.Header(panel, "Marker sound", y)
+    heading, y = O.Header(panel, "Marker sound", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_2")
     _, y = O.Check(panel, "Play a sound when applying a marker",
         "Enabled by default. The sound plays after a left-click submits a prepared marker action.",
         y, function() return ns.db.marker_sound_enabled ~= false end,
@@ -37,7 +38,10 @@ HC.Settings:NewPage({
 
     _, y = O.MultiSelect(panel, "Sounds",
         "Select the sounds available to both playback modes. At least one sound always remains selected.",
-        y, { items = soundItems(), summary = selectedSummary }, 264)
+        y, { items = soundItems(), summary = selectedSummary,
+            -- Deselect all keeps one sound: the pool is never empty.
+            bulk = function(selected) ns.selectAllMarkerSounds(selected) end }, 264)
+
 
     _, y = O.MultiSelect(panel, "Playback", "Random chooses from selected sounds. Sequential follows the selected sounds in catalogue order.", y, {
         items = {
@@ -47,23 +51,16 @@ HC.Settings:NewPage({
         summary = function() return ns.db.marker_sound_mode == "SEQUENTIAL" and "Sequential" or "Random" end,
     }, 264)
 
-    local check = O.Button(panel, 150, 22)
-    check:SetPoint("TOPLEFT", 16, y - 4)
-    check:SetText("Check sounds")
-    O.AttachHint(check, "Check sounds", "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
-    check:SetScript("OnClick", function() HC.Commands:Dispatch("sounds") end)
+    local check
+    check, y = O.ActionButton(panel, y, "Check sounds", function() HC.Commands:Dispatch("sounds") end,
+        "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
     local result = O.FontString(panel, "GameFontHighlightSmall", "muted")
     result:SetPoint("LEFT", check, "RIGHT", 12, 0)
     HC.UI.OnRefresh(panel, function() result:SetText(ns.markerSoundCheckSummary()) end)
     result:SetText(ns.markerSoundCheckSummary())
-    y = y - 34
 
-    local test = O.Button(panel, 150, 22, "primary")
-    test:SetPoint("TOPLEFT", 16, y - 4)
-    test:SetText("Test sound")
-    O.AttachHint(test, "Test sound", "Previews from the selected pool using the current playback mode, even if marker sounds are disabled.")
-    test:SetScript("OnClick", function() if ns.playMarkerSound then ns.playMarkerSound(true) end end)
-    y = y - 40
+    _, y = O.ActionButton(panel, y, "Test sound", function() if ns.playMarkerSound then ns.playMarkerSound(true) end end,
+        "Previews from the selected pool using the current playback mode, even if marker sounds are disabled.", "primary")
 
     _, y = O.PageReset(panel, y, function()
         ns.db.marker_sound_enabled = true

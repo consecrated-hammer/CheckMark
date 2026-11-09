@@ -19,6 +19,7 @@ CheckMark makes the bit of marker admin before a pull quick. Pick a marker for e
 - **Role markers.** Set a marker for Tank, Healer and three DPS slots, such as Tank = Skull and Healer = Diamond. Markers stay unique, so picking one another role already has moves it over.
 - **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
 - **Two to five players**, in normal parties, follower dungeons, dungeons and delves.
+- **Mark reminder.** Join a party and CheckMark nudges you to mark everyone, by chat, on screen or with a sound. When and how are up to you, and it never fires in combat.
 - **Marker sounds.** Clicking a cell can play a sound. On WoW Forever some Retail sounds don't exist, so CheckMark marks those as missing and never plays them.
 - **Your layout.** Cells per row, spacing, cell size and icon size are all adjustable. Widen the cells to 95 or more and member names fit too.
 

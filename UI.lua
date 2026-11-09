@@ -19,6 +19,7 @@ local function roleLabel(member, slots)
     return slot and ns.ROLE_SLOT_LABELS[slot] or "Party member"
 end
 
+-- Shared with the live preview window (Preview.lua).
 local function layout(count)
     local db = ns.db
     local columns = math.max(1, math.min(MAX_CELLS, tonumber(db.cell_columns) or 5))
@@ -30,6 +31,55 @@ local function layout(count)
         frameWidth = across * width + math.max(0, across - 1) * spacing,
         frameHeight = down * height + math.max(0, down - 1) * spacing }
 end
+
+-- A cell's look, for live cells and the preview's plain copies alike.
+local function paintCell(cell, marker, memberName)
+    cell.name:SetText(ns.db.show_cell_names and memberName or "")
+    cell.name:SetFont(cell.name:GetFont(), math.max(8, math.min(11, ns.db.cell_height - 5)), "")
+    cell.icon:ClearAllPoints()
+    cell.name:ClearAllPoints()
+    local iconSize = math.max(10, tonumber(ns.db.icon_size) or 18)
+    if ns.db.show_cell_names then
+        cell.icon:SetSize(iconSize, iconSize)
+        cell.icon:SetPoint("LEFT", cell, "LEFT", 2, 0)
+        cell.name:SetPoint("LEFT", cell.icon, "RIGHT", 4, 0)
+        cell.name:SetPoint("RIGHT", cell, "RIGHT", -3, 0)
+        cell.name:SetJustifyH("LEFT")
+    else
+        cell.icon:SetSize(iconSize, iconSize)
+        cell.icon:SetPoint("CENTER")
+    end
+    if marker > 0 then
+        cell.icon:SetTexture(ns.MARKER_TEXTURES[marker]); cell.icon:SetVertexColor(1, 1, 1, 1)
+        cell.border:SetBackdropBorderColor(0.55, 0.55, 0.55, 0.85)
+    else
+        cell.icon:SetTexture("Interface\\Buttons\\UI-PlusButton-UP"); cell.icon:SetVertexColor(unpack(T.muted))
+        cell.border:SetBackdropBorderColor(unpack(T.edge))
+    end
+    cell.plate:SetVertexColor(0.18, 0.18, 0.18, 1)
+end
+
+-- The parts of a cell that draw, on any frame.
+local function dressCell(cell)
+    cell.plate = cell:CreateTexture(nil, "BACKGROUND"); cell.plate:SetAllPoints(); cell.plate:SetTexture("Interface\\TargetingFrame\\UI-StatusBar"); cell.plate:SetVertexColor(0.18, 0.18, 0.18, 1)
+    cell.icon = cell:CreateTexture(nil, "ARTWORK"); cell.icon:SetAllPoints()
+    cell.border = CreateFrame("Frame", nil, cell, "BackdropTemplate"); cell.border:SetPoint("TOPLEFT", -1, 1); cell.border:SetPoint("BOTTOMRIGHT", 1, -1); cell.border:SetFrameLevel(cell:GetFrameLevel() + 5); cell.border:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8 }); cell.border:EnableMouse(false)
+    cell.name = cell:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); cell.name:SetPoint("TOPLEFT", 3, -1); cell.name:SetPoint("BOTTOMRIGHT", -3, 1); cell.name:SetJustifyH("LEFT"); cell.name:SetJustifyV("MIDDLE")
+end
+
+-- Where the handle sits for each Handle position: point, relative point, x, y.
+local HANDLE_POINTS = {
+    LEFT = { "RIGHT", "LEFT", -1, 0 },
+    TOPLEFT = { "BOTTOMLEFT", "TOPLEFT", 0, 1 },
+    TOP = { "BOTTOM", "TOP", 0, 1 },
+    TOPRIGHT = { "BOTTOMRIGHT", "TOPRIGHT", 0, 1 },
+    RIGHT = { "LEFT", "RIGHT", 1, 0 },
+    BOTTOMRIGHT = { "TOPRIGHT", "BOTTOMRIGHT", 0, -1 },
+    BOTTOM = { "TOP", "BOTTOM", 0, -1 },
+    BOTTOMLEFT = { "TOPLEFT", "BOTTOMLEFT", 0, -1 },
+}
+
+ns.Grid = { Layout = layout, PaintCell = paintCell, DressCell = dressCell, HandlePoints = HANDLE_POINTS }
 
 local function tooltip(cell)
     GameTooltip:SetOwner(cell, "ANCHOR_RIGHT")
@@ -59,41 +109,17 @@ local function makeCell(parent, index)
     end)
     cell:HookScript("OnEnter", tooltip); cell:HookScript("OnLeave", function() if GameTooltip:IsOwned(cell) then GameTooltip:Hide() end end)
 
-    cell.plate = cell:CreateTexture(nil, "BACKGROUND"); cell.plate:SetAllPoints(); cell.plate:SetTexture("Interface\\TargetingFrame\\UI-StatusBar"); cell.plate:SetVertexColor(0.18, 0.18, 0.18, 1)
-    cell.icon = cell:CreateTexture(nil, "ARTWORK"); cell.icon:SetAllPoints()
-    cell.border = CreateFrame("Frame", nil, cell, "BackdropTemplate"); cell.border:SetPoint("TOPLEFT", -1, 1); cell.border:SetPoint("BOTTOMRIGHT", 1, -1); cell.border:SetFrameLevel(cell:GetFrameLevel() + 5); cell.border:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8 }); cell.border:EnableMouse(false)
-    cell.name = cell:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); cell.name:SetPoint("TOPLEFT", 3, -1); cell.name:SetPoint("BOTTOMRIGHT", -3, 1); cell.name:SetJustifyH("LEFT"); cell.name:SetJustifyV("MIDDLE")
+    dressCell(cell)
     cells[index] = cell
     return cell
 end
+
 
 local function styleCell(cell, member, label)
     local marker = currentAssignments[member.fullName] or 0
     cell.marker = marker
     cell.label = label .. " · " .. member.name
-    cell.name:SetText(ns.db.show_cell_names and member.name or "")
-    cell.name:SetFont(cell.name:GetFont(), math.max(8, math.min(11, ns.db.cell_height - 5)), "")
-    cell.icon:ClearAllPoints()
-    cell.name:ClearAllPoints()
-    local iconSize = math.max(10, tonumber(ns.db.icon_size) or 18)
-    if ns.db.show_cell_names then
-        cell.icon:SetSize(iconSize, iconSize)
-        cell.icon:SetPoint("LEFT", cell, "LEFT", 2, 0)
-        cell.name:SetPoint("LEFT", cell.icon, "RIGHT", 4, 0)
-        cell.name:SetPoint("RIGHT", cell, "RIGHT", -3, 0)
-        cell.name:SetJustifyH("LEFT")
-    else
-        cell.icon:SetSize(iconSize, iconSize)
-        cell.icon:SetPoint("CENTER")
-    end
-    if marker > 0 then
-        cell.icon:SetTexture(ns.MARKER_TEXTURES[marker]); cell.icon:SetVertexColor(1, 1, 1, 1)
-        cell.border:SetBackdropBorderColor(0.55, 0.55, 0.55, 0.85)
-        cell.plate:SetVertexColor(0.18, 0.18, 0.18, 1)
-    else
-        cell.icon:SetTexture("Interface\\Buttons\\UI-PlusButton-UP"); cell.icon:SetVertexColor(unpack(T.muted))
-        cell.border:SetBackdropBorderColor(unpack(T.edge)); cell.plate:SetVertexColor(0.18, 0.18, 0.18, 1)
-    end
+    paintCell(cell, marker, member.name)
 end
 
 local function refreshCells()
@@ -129,17 +155,7 @@ function ns.updateHandle()
     if not handle or (InCombatLockdown and InCombatLockdown()) then return end
     handle:SetShown(ns.db.show_handle ~= false)
     handle:ClearAllPoints()
-    local positions = {
-        LEFT = { "RIGHT", "LEFT", -1, 0 },
-        TOPLEFT = { "BOTTOMLEFT", "TOPLEFT", 0, 1 },
-        TOP = { "BOTTOM", "TOP", 0, 1 },
-        TOPRIGHT = { "BOTTOMRIGHT", "TOPRIGHT", 0, 1 },
-        RIGHT = { "LEFT", "RIGHT", 1, 0 },
-        BOTTOMRIGHT = { "TOPRIGHT", "BOTTOMRIGHT", 0, -1 },
-        BOTTOM = { "TOP", "BOTTOM", 0, -1 },
-        BOTTOMLEFT = { "TOPLEFT", "BOTTOMLEFT", 0, -1 },
-    }
-    local point = positions[ns.db.handle_position] or positions.TOP
+    local point = HANDLE_POINTS[ns.db.handle_position] or HANDLE_POINTS.TOP
     handle:SetPoint(point[1], panel, point[2], point[3], point[4])
 end
 
@@ -159,10 +175,51 @@ function ns.refreshPopup()
     currentAssignments = ns.buildDefaultAssignments(currentMembers)
     refreshCells()
 end
+-- Show conditions, on top of "in a two-to-five player party, out of
+-- combat", which always applies. Ticking none means always. They're read
+-- out of combat, on zone, leader and roster changes; combat hides the grid
+-- regardless.
+ns.GRID_CONDITIONS = {
+    { key = "dungeon", label = "In a dungeon", test = function()
+        local inside, kind = IsInInstance(); return inside and kind == "party" end },
+    { key = "delve", label = "In a delve or scenario", test = function()
+        local inside, kind = IsInInstance(); return inside and kind == "scenario" end },
+    { key = "world", label = "In the open world", test = function() return not IsInInstance() end },
+    { key = "leader", label = "As party leader", test = function()
+        return UnitIsGroupLeader and UnitIsGroupLeader("player") or false end },
+}
+
+function ns.hasGridConditions()
+    for _, condition in ipairs(ns.GRID_CONDITIONS) do
+        if ns.db.visibility and ns.db.visibility[condition.key] then return true end
+    end
+    return false
+end
+
+function ns.gridConditionsMatch()
+    if not ns.hasGridConditions() then return true end
+    for _, condition in ipairs(ns.GRID_CONDITIONS) do
+        if ns.db.visibility[condition.key] and condition.test() then return true end
+    end
+    return false
+end
+
+function ns.gridVisibilitySummary()
+    if ns.db.visibility_mode == "HIDDEN" then return "Never" end
+    local labels = {}
+    for _, condition in ipairs(ns.GRID_CONDITIONS) do
+        if ns.db.visibility and ns.db.visibility[condition.key] then labels[#labels + 1] = condition.label end
+    end
+    if #labels == 0 then return "Always" end
+    if #labels > 2 then return #labels .. " conditions" end
+    return table.concat(labels, ", ")
+end
+
 function ns.applyVisibility()
     if not panel or (InCombatLockdown and InCombatLockdown()) then return end
     UnregisterStateDriver(panel, "visibility")
-    if ns.db.visibility_mode == "HIDDEN" or ns.db.panel_hidden or not ns.isEligibleGroup() then
+    if ns.db.visibility_mode == "HIDDEN" or ns.db.panel_hidden or not ns.isEligibleGroup()
+        or not ns.gridConditionsMatch() then
         RegisterStateDriver(panel, "visibility", "hide")
     else
         -- This is deliberately a secure state driver, like Salve's protected

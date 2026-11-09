@@ -72,6 +72,7 @@ local DEFAULT_DB = {
     cell_spacing            = 1,
     show_cell_names         = false,
     marker_sound_enabled    = true,
+    visibility              = {},
     role_template = {
         TANK   = 8,  -- Skull
         HEALER = 3,  -- Diamond
@@ -94,6 +95,11 @@ local function initDB()
     for k, v in pairs(DEFAULT_DB) do
         if d[k] == nil then
             d[k] = copyValue(v)
+        end
+    end
+    for _, module in ipairs({ ns.Reminder, ns.Preview }) do
+        for k, v in pairs(module.DEFAULTS or {}) do
+            if d[k] == nil then d[k] = v end
         end
     end
 
@@ -162,8 +168,20 @@ end
 local pendingMarkerRebuild = false
 ns.pendingMarkerRebuild = false  -- read by Marker.lua
 
+-- A party forms in a burst of roster events; check once it settles.
+local reminderQueued = false
+local function queueReminder()
+    if not ns.Reminder or reminderQueued then return end
+    reminderQueued = true
+    C_Timer.After(1, function()
+        reminderQueued = false
+        ns.Reminder:Check()
+    end)
+end
+
 local function onGroupChanged()
     if not ns.db then return end
+    queueReminder()
     -- The grid owns its visibility through a secure state driver.  Do not try
     -- to show or hide secure children during combat.
     if ns.applyVisibility then ns.applyVisibility() end
@@ -189,12 +207,21 @@ core:SetScript("OnEvent", function(_, event, ...)
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Group unit tokens are reliable on the next frame on both login and
         -- reload, so use the same visibility rule for every world entry.
-        C_Timer.After(0.2, onGroupChanged)
+        C_Timer.After(0.2, function()
+            if ns.Reminder then ns.Reminder:Prime() end
+            onGroupChanged()
+            if ns.Reminder then ns.Reminder:Recheck() end
+        end)
+
+    elseif event == "ZONE_CHANGED_NEW_AREA" or event == "PARTY_LEADER_CHANGED" then
+        if ns.applyVisibility then ns.applyVisibility() end
+        if ns.Reminder then ns.Reminder:Recheck() end
 
     elseif event == "ROLE_CHANGED_INFORM" then
         if ns.refreshPopup then ns.refreshPopup() end
 
     elseif event == "PLAYER_REGEN_ENABLED" then
+        if ns.Reminder then ns.Reminder:CombatEnded() end
         if ns.pendingMarkerRebuild then
             ns.pendingMarkerRebuild = false
             if ns.rebuildSecureButtons then ns.rebuildSecureButtons() end
@@ -210,3 +237,6 @@ core:RegisterEvent("GROUP_ROSTER_UPDATE")
 core:RegisterEvent("PLAYER_ENTERING_WORLD")
 core:RegisterEvent("PLAYER_REGEN_ENABLED")
 pcall(core.RegisterEvent, core, "ROLE_CHANGED_INFORM")
+-- Show conditions depend on where you are and who leads.
+pcall(core.RegisterEvent, core, "ZONE_CHANGED_NEW_AREA")
+pcall(core.RegisterEvent, core, "PARTY_LEADER_CHANGED")

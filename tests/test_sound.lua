@@ -12,13 +12,13 @@ local ns = { db = { marker_sound_enabled = true, marker_sound_id = 416, marker_s
 assert(loadfile("Sound.lua"))("CheckMark", ns)
 ns.initializeMarkerSoundSettings()
 
-equal(#ns.MARKER_SOUNDS, 15, "all supplied marker sounds are catalogued")
+equal(#ns.MARKER_SOUNDS, 22, "Retail sees every Retail and shared sound")
 equal(ns.MARKER_SOUNDS[1].id, 416, "murloc aggro remains first in catalogue order")
-equal(ns.MARKER_SOUNDS[15].id, 10049, "heroism cast is catalogued")
-equal(#ns.getSelectedMarkerSounds(), 15, "legacy random mode migrates to the full catalogue")
+equal(ns.MARKER_SOUNDS[22].id, 10049, "heroism cast is catalogued")
+equal(#ns.getSelectedMarkerSounds(), 22, "legacy random mode migrates to the full catalogue")
 equal(ns.db.marker_sound_mode, "RANDOM", "legacy random mode migrates to random playback")
 
-ns.random = function(maximum) equal(maximum, 15, "random mode sees selected sounds only"); return 15 end
+ns.random = function(maximum) equal(maximum, 22, "random mode sees selected sounds only"); return 22 end
 equal(ns.playMarkerSound(), true, "random sound plays")
 equal(played[#played].id, 10049, "random selection uses selected catalogue entry")
 equal(played[#played].channel, "Master", "sound uses the master channel")
@@ -56,3 +56,21 @@ equal(legacySingle.getSelectedMarkerSounds()[1].id, 888, "legacy selected sound 
 equal(legacySingle.db.marker_sound_mode, "SEQUENTIAL", "legacy non-random mode becomes sequential")
 
 print("CheckMark sound tests passed")
+
+-- Select all and Deselect all.
+ns.selectAllMarkerSounds(false)
+equal(#ns.getSelectedMarkerSounds(), 1, "deselect all keeps one sound")
+ns.selectAllMarkerSounds(true)
+equal(#ns.getSelectedMarkerSounds(), 22, "select all ticks every sound")
+
+-- WoW Forever only sees sounds it has.
+C_AddOns = { GetAddOnMetadata = function(_, key) return key == "X-CheckMark-Target" and "Camelot" or nil end }
+local forever = { db = { marker_sound_enabled = true } }
+assert(loadfile("Sound.lua"))("CheckMark", forever)
+forever.initializeMarkerSoundSettings()
+equal(#forever.MARKER_SOUNDS, 12, "Forever sees shared sounds only")
+for _, sound in ipairs(forever.MARKER_SOUNDS) do
+    equal(sound.only, nil, "no Retail-only sound on Forever: " .. sound.name)
+end
+C_AddOns = nil
+print("CheckMark sound catalogue tests passed")

@@ -2,23 +2,45 @@ local addonName, ns = ...
 
 -- The catalogue is the only place a built-in sound is defined. The options
 -- page and both playback modes derive their choices from this ordered list.
-ns.MARKER_SOUNDS = {
+-- `only` names the one client a sound exists on; players only ever see the
+-- sounds their client has. Retail-only kits were found missing on WoW
+-- Forever with Check sounds; the rest are long-standing kits both have.
+local CATALOGUE = {
     { id = 416, name = "Murloc Aggro" },
-    { id = 11965, name = "A Horseman Laugh" },
+    { id = 11965, name = "A Horseman Laugh", only = "retail" },
     { id = 888, name = "Level Up" },
     { id = 618, name = "Quest Added" },
-    { id = 12891, name = "Achievement Gained" },
+    { id = 878, name = "Quest Complete" },
+    { id = 12891, name = "Achievement Gained", only = "retail" },
     { id = 13833, name = "Achievement Menu Close" },
-    { id = 17318, name = "Dungeon Ready" },
-    { id = 114685, name = "Tyrande Greetings" },
-    { id = 114684, name = "Tyrande Farewells" },
-    { id = 14377, name = "Yogg-Saron Whisper" },
-    { id = 339645, name = "Lightcalled Hearthstone Cast" },
-    { id = 339647, name = "Lightcalled Hearthstone Paper Cast" },
+    { id = 17318, name = "Dungeon Ready", only = "retail" },
+    { id = 8960, name = "Ready Check" },
+    { id = 8959, name = "Raid Warning" },
+    { id = 8459, name = "PvP Queue Ready" },
+    { id = 880, name = "Party Invite" },
+    { id = 3081, name = "Whisper", only = "retail" },
+    { id = 5274, name = "Auction House Open" },
+    { id = 114685, name = "Tyrande Greetings", only = "retail" },
+    { id = 114684, name = "Tyrande Farewells", only = "retail" },
+    { id = 14377, name = "Yogg-Saron Whisper", only = "retail" },
+    { id = 339645, name = "Lightcalled Hearthstone Cast", only = "retail" },
+    { id = 339647, name = "Lightcalled Hearthstone Paper Cast", only = "retail" },
     { id = 120, name = "Loot Window Coin" },
     { id = 1264, name = "Loot Window Open Empty" },
-    { id = 10049, name = "Heroism Cast" },
+    { id = 10049, name = "Heroism Cast", only = "retail" },
 }
+ns.SOUND_CATALOGUE = CATALOGUE
+
+local function clientKey()
+    local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+    local target = getter and getter(addonName, "X-CheckMark-Target")
+    return target == "Camelot" and "forever" or "retail"
+end
+
+ns.MARKER_SOUNDS = {}
+for _, sound in ipairs(CATALOGUE) do
+    if not sound.only or sound.only == clientKey() then ns.MARKER_SOUNDS[#ns.MARKER_SOUNDS + 1] = sound end
+end
 
 local lastSequentialSoundID
 
@@ -167,4 +189,21 @@ function ns.playMarkerSound(preview)
         sound = sounds[choose(#sounds)]
     end
     return pcall(PlaySound, sound.id, "Master")
+end
+
+-- Select all ticks every sound this client can play. Deselect all leaves
+-- the first playable one, as the pool is never empty.
+function ns.selectAllMarkerSounds(selected)
+    if not ns.db then return end
+    ns.db.marker_sound_ids = {}
+    for _, sound in ipairs(ns.MARKER_SOUNDS) do
+        if not ns.isMarkerSoundMissing(sound.id) then
+            ns.db.marker_sound_ids[sound.id] = true
+            if not selected then break end
+        end
+    end
+    if next(ns.db.marker_sound_ids) == nil and ns.MARKER_SOUNDS[1] then
+        ns.db.marker_sound_ids[ns.MARKER_SOUNDS[1].id] = true
+    end
+    if ns.resetMarkerSoundSequence then ns.resetMarkerSoundSequence() end
 end
