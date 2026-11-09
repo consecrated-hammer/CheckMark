@@ -16,7 +16,7 @@ local function section(parent, columns)
 end
 local function refreshGrid() if ns.refreshPopup then ns.refreshPopup() end end
 
-HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", description = "Shape the compact five-player pre-pull marker grid.",
+HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", description = "Shape the compact five-player marker grid.",
     headerAction = ns.LivePreviewAction }, function(panel)
     local db = ns.db
     local presets = section(panel); local presetY = -8

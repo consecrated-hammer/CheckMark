@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- CheckMark's wording isn't all about pulls any more. The reminder, combat
+  message, addon notes and description now fit questing as much as dungeons.
+
 ## [1.3.0] - 2026-11-09
 
 ### Added

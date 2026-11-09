@@ -1,6 +1,6 @@
 # CheckMark
 
-**Pre-pull raid markers for parties.**
+**Raid markers for your party, so everyone's easy to spot.**
 
 _Skull on the tank, every time._
 
@@ -10,7 +10,7 @@ Questions, bugs or ideas? Come say hi on the [Consecrated Hammer Discord](https:
 
 ---
 
-CheckMark makes the bit of marker admin before a pull quick. Pick a marker for each role once, then before the pull click each party member's small cell to put their marker on them. It's deliberately a prep tool, so it doesn't mark anyone automatically, doesn't work in combat, and doesn't guess what markers other players have already set.
+CheckMark puts a raid marker on each party member so you can spot them at a glance, whether you're questing together or heading into a dungeon. Pick a marker for each role once, then click each party member's small cell to put their marker on them. It doesn't mark anyone automatically, doesn't work in combat, and doesn't guess what markers other players have already set.
 
 ![Live panel](https://media.forgecdn.net/attachments/1903/717/live-panel-dev43-png.png)
 
@@ -18,7 +18,7 @@ CheckMark makes the bit of marker admin before a pull quick. Pick a marker for e
 
 - **Role markers.** Set a marker for Tank, Healer and three DPS slots, such as Tank = Skull and Healer = Diamond. Markers stay unique, so picking one another role already has moves it over.
 - **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
-- **Two to five players**, in normal parties, follower dungeons, dungeons and delves.
+- **Two to five players**, out questing or in follower dungeons, dungeons and delves.
 - **Mark reminder.** Join a party and CheckMark nudges you to mark everyone, by chat, on screen or with a sound. When and how are up to you, and it never fires in combat.
 - **Marker sounds.** Clicking a cell can play a sound. On WoW Forever some Retail sounds don't exist, so CheckMark marks those as missing and never plays them.
 - **Your layout.** Cells per row, spacing, cell size and icon size are all adjustable. Widen the cells to 95 or more and member names fit too.
@@ -27,7 +27,7 @@ CheckMark makes the bit of marker admin before a pull quick. Pick a marker for e
 
 Install, then type `/checkmark` (or `/cm`) for settings and set your role markers on the **Markers** page.
 
-In a party, `/checkmark toggle` or right-clicking the minimap button shows the grid. Left-click each cell before the pull. Drag the small handle above the grid to move it, and right-click the handle to open settings.
+In a party, `/checkmark toggle` or right-clicking the minimap button shows the grid. Left-click each cell to mark that member. Drag the small handle above the grid to move it, and right-click the handle to open settings.
 
 ## Commands
 

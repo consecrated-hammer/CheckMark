@@ -228,7 +228,7 @@ function ns.applyVisibility()
     end
 end
 function ns.showPopup()
-    if InCombatLockdown and InCombatLockdown() then ns.notify("CheckMark is available before the pull, not during combat."); return end
+    if InCombatLockdown and InCombatLockdown() then ns.notify("CheckMark can't mark in combat. Try again once it's over."); return end
     if not ns.isEligibleGroup() then
         ns.notify("Form a two-to-five player party to prepare markers.")
         return
@@ -241,7 +241,7 @@ end
 function ns.hidePopup() if panel then panel:Hide() end end
 function ns.togglePopup()
     if InCombatLockdown and InCombatLockdown() then
-        ns.notify("CheckMark is available before the pull, not during combat.")
+        ns.notify("CheckMark can't mark in combat. Try again once it's over.")
         return
     end
     if ns.db.panel_hidden or not (panel and panel:IsShown()) then

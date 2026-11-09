@@ -14,14 +14,14 @@ ns.LivePreviewAction = {
 local quips = {
     "All marked up. Try not to make it a personality.",
     "A skull for the tank. Classic for a reason.",
-    "Markers applied. The pull is now at least emotionally prepared.",
+    "Markers applied. Your party is now at least easy to find.",
     "One click per person. That is the whole CheckMark thesis.",
     "The raid icons have been asked politely to behave.",
     "No targets were inspected in the making of this assignment.",
     "CheckMark: because 'you are the triangle' is an actionable plan.",
     "Eight icons, zero prophecy. Just a tidy little roster.",
     "The marker grid is compact. Your responsibilities remain enormous.",
-    "Pre-pull admin complete. Now comes the part with the dragons.",
+    "Marker admin complete. Now comes the part with the dragons.",
 }
 
 local function yesNo(value) return value and "yes" or "no" end
@@ -85,6 +85,10 @@ end
 -- HammerCore's tools/whatsnew_check.py fails the release without one. A
 -- `page` adds a link to that settings page.
 local WHATS_NEW = {
+    { version = "1.3.1", items = {
+        { title = "Not just for pulls", text = "CheckMark's wording now fits questing too: mark your party so everyone's easy to spot, wherever you are.",
+            kind = "improved" },
+    } },
     { version = "1.3.0", date = "2026-11-09", items = {
         { title = "Mark reminder", text = "Join a party and CheckMark nudges you to mark everyone. Choose when and how on the Reminder page, or turn it off.",
             page = "Reminder" },

@@ -23,8 +23,8 @@ local THROTTLE = 10
 local RAID_WARNING_SOUND = 8959
 
 local MESSAGES = {
-    join = "New party! Time to mark everyone before the pull.",
-    member = "Someone new joined. Give them a marker before the pull.",
+    join = "New party! Mark everyone so they're easy to spot.",
+    member = "Someone new joined. Give them a marker.",
     test = "This is what your mark reminder looks like.",
 }
 
