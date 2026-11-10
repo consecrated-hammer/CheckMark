@@ -1,11 +1,59 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0] - 2026-11-10
+
+The "who's the Diamond again?" update.
+
+### Added
+
+- **Regulars tab.** Markers now has separate Assignments and Regulars tabs.
+  Pinned and learned people, friend/party pickers and learning settings live
+  together on Regulars, which stays selected while you edit the list.
+
+- **Mark party window.** When your party forms or someone joins, a big
+  window pops up with everyone's marker on a card. Click each card to mark
+  them, right-click to clear. It closes once you've clicked everyone, and if
+  combat gets in the way it comes back afterwards with your ticks intact.
+- **Markers follow people, not slots.** Pin someone to a marker and they
+  keep it whoever's leading and whatever order the party's in. Battle.net
+  friends keep it on all their characters.
+- **CheckMark learns.** Pick a different marker for someone and it's
+  remembered next time. If others in your party run CheckMark, it shares who
+  got what, so your regular crew stays consistent even when you weren't
+  there.
+- **Profiles with auto-switching.** World, Delve and Dungeon come ready to
+  go. Dungeon puts roles first (tank gets Skull, healer gets Diamond), and
+  the world puts your regulars first.
+- **Timing settings.** Reminders wait 2 seconds after someone joins so the
+  whole party's there, and 3 seconds after combat so you can loot first.
+  Both can be changed or turned off.
+- If someone else is already marking the party, CheckMark tells you who and
+  stays quiet.
+- `/checkmark whois` explains who gets which marker and why.
+- **Minimap menu.** Right-click the minimap button for settings, profiles,
+  Mark the party, Show grid and the mark reminder switch, all in one spot.
+  Rather it just opened settings? Minimap right-click on Visibility.
+- **Settings search.** Can't find a setting? Type in the box at the top of
+  settings and it takes you straight there. No more rummaging.
 
 ### Changed
 
-- CheckMark's wording isn't all about pulls any more. The reminder, combat
-  message, addon notes and description now fit questing as much as dungeons.
+- Everyone in a party of five now gets a marker. Before, the fourth and fifth
+  person out in the world got nothing, which was a bit rude. The three DPS
+  slots are now a fill order, and any DPS markers you'd set lead it.
+- Someone joining now triggers a reminder by default.
+- The on-screen message is off by default, because the window does that job
+  now. It's turned off once for existing players and you can turn it back on.
+- The reminder picks a random line each time, so it nags you in fresh words.
+- CheckMark's wording isn't all about pulls any more, so it fits questing as
+  much as dungeons.
+- No more Reload UI button. Nothing needed it.
+- Right-clicking the minimap button opens the menu instead of showing or
+  hiding the grid. Show grid is the menu's second item.
+
+### Fixed
+
+- On Forever, surnames are no longer mistaken for realm names.
 
 ## [1.3.0] - 2026-11-09
 

@@ -2,7 +2,7 @@ local addonName, ns = ...
 local HC = ns.HammerCore
 
 -- Declares CheckMark to HammerCore: commands, grid actions, the minimap
--- right-click, status, diagnostics and About content.
+-- menu, status, diagnostics and About content.
 
 -- The header button on pages whose settings change how the grid looks.
 ns.LivePreviewAction = {
@@ -74,6 +74,28 @@ local function buildReport()
 end
 
 
+-- Extras under HammerCore's settings and Profiles items on the minimap
+-- right-click. Marking needs a click per person, so "Mark the party" opens
+-- the marking window; solo, it previews it with a sample party.
+function ns.minimapMenu()
+    local combat = InCombatLockdown and InCombatLockdown() or false
+    local party = ns.isEligibleGroup and ns.isEligibleGroup() or false
+    return {
+        { text = party and "Mark the party" or "Preview marking window", disabled = combat,
+            func = function()
+                if party then ns.MarkWindow:Open() else ns.MarkWindow:Test() end
+            end },
+        { text = "Show grid", checked = ns.isPopupShown and ns.isPopupShown() or false, disabled = combat,
+            func = function() if ns.togglePopup then ns.togglePopup() end end },
+        { text = "Mark reminder", checked = ns.db.remind_enabled and true or false,
+            func = function()
+                ns.db.remind_enabled = not ns.db.remind_enabled
+                HC.Print("mark reminder " .. (ns.db.remind_enabled and "on" or "off"))
+                if HC.Settings:IsShown() then HC.Settings:Select(HC.Settings.selected) end
+            end },
+    }
+end
+
 local function setHandle(shown)
     ns.db.show_handle = shown
     if ns.updateHandle then ns.updateHandle() end
@@ -85,8 +107,20 @@ end
 -- HammerCore's tools/whatsnew_check.py fails the release without one. A
 -- `page` adds a link to that settings page.
 local WHATS_NEW = {
-    { version = "1.3.1", items = {
-        { title = "Not just for pulls", text = "CheckMark's wording now fits questing too: mark your party so everyone's easy to spot, wherever you are.",
+    { version = "1.4.0", date = "2026-11-10", items = {
+        { title = "Mark your party", text = "When your party forms, a big window pops up with everyone's marker. Click each person to mark them.",
+            page = "Reminder" },
+        { title = "Markers follow people", text = "Pin someone to a marker and they keep it on any of their characters if they're a Battle.net friend.",
+            page = "Markers" },
+        { title = "It learns", text = "CheckMark remembers the markers you pick, and party members running CheckMark share theirs. Manage pinned and learned people on Markers > Regulars.",
+            page = "Markers" },
+        { title = "World, Delve, Dungeon", text = "Profiles switch automatically, so dungeons can go by role and the open world by who's who.",
+            page = "Profiles" },
+        { title = "Good timing", text = "Reminders wait a couple of seconds after someone joins, and a few after combat so you can loot first.",
+            kind = "improved", page = "Reminder" },
+        { title = "Minimap menu", text = "Right-click the minimap button to mark the party, show the grid or switch the reminder.",
+            kind = "improved", page = "Visibility" },
+        { title = "Settings search", text = "Type in the box at the top of settings to jump straight to any setting.",
             kind = "improved" },
     } },
     { version = "1.3.0", date = "2026-11-09", items = {
@@ -134,8 +168,7 @@ HC:Init({
     end,
     minimap = {
         icon = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8",
-        rightClick = function() if ns.togglePopup then ns.togglePopup() end end,
-        rightClickLabel = "show or hide the grid",
+        menu = function() return ns.minimapMenu() end,
     },
     toggle = { help = "Show or hide the marker grid",
         run = function() if ns.togglePopup then ns.togglePopup() end end },
@@ -176,7 +209,78 @@ HC.Commands:Add({ name = "sounds", section = "Sounds", help = "Find marker sound
         if HC.Settings:IsShown() then HC.Settings:Select(HC.Settings.selected) end
     end })
 
-HC.Commands:AddAction({ section = "Grid", usage = "Left-click a cell", help = "Apply that role's marker" })
+HC.Commands:AddAction({ section = "Grid", usage = "Left-click a cell", help = "Apply that person's marker" })
 HC.Commands:AddAction({ section = "Grid", usage = "Right-click a cell", help = "Remove the marker from that member" })
 HC.Commands:AddAction({ section = "Grid", usage = "Left-click an empty cell", help = "Open Markers settings" })
+HC.Commands:AddAction({ section = "Marking window", usage = "Click a card", help = "Mark that person" })
+HC.Commands:AddAction({ section = "Marking window", usage = "Click a card's icon", help = "Choose another marker; CheckMark remembers it" })
+HC.Commands:AddAction({ section = "Marking window", usage = "Click a card's pin", help = "Always give that person this marker" })
+
+-- Profiles: World, Delve and Dungeon, switching on their own. A profile
+-- saves who goes first, the role markers and fill order, and the grid's
+-- position, size and Show rules. Regulars, the reminder and the window are
+-- the same in every profile.
+HC.Profiles:Setup({
+    groups = {
+        { key = "markers", label = "Markers", keys = { "marker_rules", "role_template", "fill_order" } },
+        { key = "position", label = "Position", keys = { "popup_position", "show_handle", "handle_position" } },
+        { key = "grid", label = "Grid and size",
+            keys = { "cell_width", "cell_height", "icon_size", "cell_columns", "cell_spacing", "show_cell_names" } },
+        { key = "visibility", label = "Visibility", keys = { "visibility_mode", "visibility" } },
+    },
+    defaults = function() return ns.DEFAULT_DB end,
+    seed = {
+        { name = "World", values = { marker_rules = "REGULARS_ROLES" } },
+        { name = "Delve", values = { marker_rules = "REGULARS_ROLES" } },
+        { name = "Dungeon", values = { marker_rules = "ROLES_REGULARS" } },
+    },
+    active = "World",
+    rules = {
+        { profile = "Dungeon", instance = { PARTY = true }, source = "GROUP", min = 1, max = 40 },
+        { profile = "Delve", instance = { SCENARIO = true }, source = "GROUP", min = 1, max = 40 },
+        { profile = "World", source = "GROUP", min = 1, max = 40 },
+    },
+    unsafe = function() return InCombatLockdown and InCombatLockdown() end,
+    apply = function()
+        if ns.placePopup then ns.placePopup() end
+        if ns.updateHandle then ns.updateHandle() end
+        if ns.refreshPopup then ns.refreshPopup() end
+        if ns.applyVisibility then ns.applyVisibility() end
+        if ns.MarkWindow and ns.MarkWindow:IsShown() then ns.MarkWindow:Refresh() end
+        if ns.Preview then ns.Preview:Refresh() end
+    end,
+})
+
+-- /checkmark whois: everything behind who gets which marker, to copy.
+-- It names people, so it isn't part of the diagnostics report.
+local function whois()
+    local Identity = ns.Identity
+    Identity:RefreshFriends()
+    local inside, kind = false, "none"
+    if IsInInstance then inside, kind = IsInInstance() end
+    local lines = {
+        "Client: " .. (Identity.IsForever() and "WoW Forever" or "Retail"),
+        "Where: " .. (inside and tostring(kind) or "open world"),
+        "Profile: " .. tostring(HC.Profiles:Active() or "none"),
+        "Who goes first: " .. tostring(ns.db.marker_rules),
+        "Your BattleTag readable: " .. yesNo(Identity.selfTag ~= nil),
+        "Friends list readable: " .. yesNo(Identity.friendsReadable) .. " (" .. #Identity.friends .. " friends)",
+        "Party messages: " .. (ns.Share.registered and "registered" or "not registered")
+            .. (ns.Share.lastSendOk == nil and "" or (", last send " .. (ns.Share.lastSendOk and "ok" or "failed"))),
+        "",
+    }
+    local members = Identity.Label(ns.getGroupMembers())
+    for _, slot in ipairs(ns.Assign.Plan(members)) do
+        local member = slot.member
+        local tag = Identity.TagFor(member.guid)
+        lines[#lines + 1] = ("%s: %s (%s), role %s, GUID %s, %s"):format(member.label or "?",
+            ns.MARKER_NAMES[slot.marker] or "None", ns.Assign.SOURCE_LABELS[slot.source] or "?", tostring(member.role),
+            member.guid and "readable" or "hidden", tag and ("Battle.net " .. tag) or ("character " .. tostring(member.key)))
+    end
+    if #members == 0 then lines[#lines + 1] = "Not in a party." end
+    HC.Copy:Show("CheckMark whois", table.concat(lines, "\n"), "Press Ctrl+C to copy, then paste it to Claude.")
+end
+
+HC.Commands:Add({ name = "whois", section = "Diagnostics", help = "Explain who gets which marker, and why",
+    run = whois })
 HC.Commands:AddAction({ section = "Grid", usage = "Drag the handle", help = "Move the grid; right-click it for settings" })

@@ -10,24 +10,30 @@ Questions, bugs or ideas? Come say hi on the [Consecrated Hammer Discord](https:
 
 ---
 
-CheckMark puts a raid marker on each party member so you can spot them at a glance, whether you're questing together or heading into a dungeon. Pick a marker for each role once, then click each party member's small cell to put their marker on them. It doesn't mark anyone automatically, doesn't work in combat, and doesn't guess what markers other players have already set.
+CheckMark puts a raid marker on each party member so you can spot them at a glance, whether you're questing together or heading into a dungeon. When your party forms, a window pops up with everyone's marker; click each person to mark them. Markers stick to people, so your regulars get the same one every time, on any of their characters. It doesn't mark anyone automatically, doesn't work in combat, and doesn't guess what markers other players have already set.
 
 ![Live panel](https://media.forgecdn.net/attachments/1903/717/live-panel-dev43-png.png)
 
 ## What it does
 
-- **Role markers.** Set a marker for Tank, Healer and three DPS slots, such as Tank = Skull and Healer = Diamond. Markers stay unique, so picking one another role already has moves it over.
+- **Mark party window.** When your party forms or someone joins, a window shows a big card for each member with their marker. Click a card to mark them, right-click to clear, click the icon to pick another marker, or pin them. It waits a couple of seconds after people join and a few after combat, so you can loot first.
+- **Markers follow people.** Pin someone to a marker and they keep it whatever the party order or leader. Battle.net friends are matched by BattleTag, so they keep it on every character.
+- **It learns.** CheckMark remembers the markers you give people. Party members running CheckMark share who they marked with what, so a regular crew stays consistent.
+- **Who goes first.** Regulars, role markers (Tank = Skull, Healer = Diamond) and a fill order for everyone else, in the order you choose.
+- **Profiles.** World, Delve and Dungeon switch automatically. Dungeon puts roles first and the world puts regulars first; change either on the Markers page.
 - **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
 - **Two to five players**, out questing or in follower dungeons, dungeons and delves.
-- **Mark reminder.** Join a party and CheckMark nudges you to mark everyone, by chat, on screen or with a sound. When and how are up to you, and it never fires in combat.
+- **Mark reminder.** Every trigger, wait and output is a setting on the Reminder page, and it never fires in combat.
 - **Marker sounds.** Clicking a cell can play a sound. On WoW Forever some Retail sounds don't exist, so CheckMark marks those as missing and never plays them.
 - **Your layout.** Cells per row, spacing, cell size and icon size are all adjustable. Widen the cells to 95 or more and member names fit too.
 
 ## Getting started
 
-Install, then type `/checkmark` (or `/cm`) for settings and set your role markers on the **Markers** page.
+Install, then type `/checkmark` (or `/cm`) for settings. On **Markers**, **Assignments** sets who goes first, the role markers and fill order. **Regulars** holds your pinned and learned people, friend/party pickers and learning settings. **Test reminder** on the Reminder page shows the marking window with a sample party.
 
-In a party, `/checkmark toggle` or right-clicking the minimap button shows the grid. Left-click each cell to mark that member. Drag the small handle above the grid to move it, and right-click the handle to open settings.
+Right-click the minimap button for a menu: settings, profiles, **Mark the party** (opens the marking window, or previews it when you're solo), **Show grid** and **Mark reminder**. Prefer right-click to open settings? Change **Minimap right-click** on Visibility. Lost a setting? The search box at the top of settings finds it.
+
+In a party, `/checkmark toggle` or **Show grid** on the minimap menu shows the grid. Left-click each cell to mark that member. Drag the small handle above the grid to move it, and right-click the handle to open settings.
 
 ## Commands
 
@@ -38,13 +44,16 @@ In a party, `/checkmark toggle` or right-clicking the minimap button shows the g
 | `/checkmark lock` / `unlock` | Hide or show the drag handle |
 | `/checkmark reset position` | Move the grid back to the centre |
 | `/checkmark sounds` | Find marker sounds this client can't play |
+| `/checkmark profile [name]` | List profiles, or switch to one |
+| `/checkmark whois` | Explain who gets which marker, and why |
 
 Every Consecrated Hammer addon also has `help`, `version`, `about`, `debug`, `startup`, `minimap`, `reset settings` and `quiz`.
 
 ## Limits
 
 - **Markers need your click and permission.** Each click puts on one marker, and where Blizzard requires it you need to be party leader or assistant.
-- **It shows your plan, not what's actually marked.** WoW doesn't give addons a reliable view of other players' markers, so CheckMark doesn't pretend to know.
+- **It shows your plan, not what's actually marked.** WoW hides party markers from addons, so a ticked card means you clicked it, not that the marker's still there. Learning only sees CheckMark clicks, never markers set by hand or by other addons.
+- **BattleTags need a Battle.net friendship.** Anyone else is matched by character.
 - **Out of combat only.** The grid hides when combat starts, and CheckMark never re-marks people when the group changes.
 - **Parties only.** Raids of six or more are out of scope.
 

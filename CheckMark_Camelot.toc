@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: CheckMark (WoW Forever)
 ## Author: consecrated-hammer
-## Version: 1.3.0
-## X-ReleaseDate: 2026-11-09
+## Version: 1.4.0
+## X-ReleaseDate: 2026-11-10
 ## Notes: WoW Forever (Camelot) build using CheckMark's Mainline backend.
 ## AllowLoadGameType: camelot
 ## X-Curse-Project-ID: 1673005
@@ -20,16 +20,20 @@
 # Use the maintained protected-action and combat-deferral path verbatim.
 Libs\HammerCore\HammerCore.xml
 Core.lua
+Identity.lua
 Setup.lua
 Templates.lua
+Share.lua
 Marker.lua
 Sound.lua
 Reminder.lua
 Theme.lua
 UI.lua
+MarkWindow.lua
 Preview.lua
 Options\CheckMark.lua
 Options\Markers.lua
+Options\Profiles.lua
 Options\Reminder.lua
 Options\Sounds.lua
 Options\Visibility.lua

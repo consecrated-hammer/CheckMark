@@ -64,7 +64,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     local names = {}
     for _, spec in ipairs(HC.Settings.order) do names[#names + 1] = spec.name end
     equal(table.concat(names, ","),
-        "CheckMark,Markers,Reminder,Sounds,Visibility,What's new,Commands,Troubleshooting,About", toc .. ": rail order")
+        "CheckMark,Markers,Profiles,Reminder,Sounds,Visibility,What's new,Commands,Troubleshooting,About", toc .. ": rail order")
     local failures = {}
     for name, err in pairs(HC.Settings.errors) do failures[#failures + 1] = name .. ": " .. err end
     equal(table.concat(failures, "; "), "", toc .. ": every settings page builds")
@@ -112,7 +112,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     SlashCmdList.CHECKMARK("help")
     local sawAction = false
     for _, line in ipairs(wow.printed) do
-        if wow.Plain(line) == "  Left-click a cell - Apply that role's marker" then sawAction = true end
+        if wow.Plain(line) == "  Left-click a cell - Apply that person's marker" then sawAction = true end
     end
     equal(sawAction, true, toc .. ": grid actions are listed in help")
 
@@ -169,8 +169,14 @@ do
     local leader = true
     UnitIsGroupLeader = function() return leader end
     local function fire(event) core.scripts.OnEvent(core, event) end
+    -- "join" and "member" match any line from that reminder's pool.
     local function said(text)
-        for _, line in ipairs(wow.printed) do if wow.Plain(line):find(text, 1, true) then return true end end
+        local pool = ns.Reminder.MESSAGES[text] or { text }
+        for _, line in ipairs(wow.printed) do
+            for _, wanted in ipairs(pool) do
+                if wow.Plain(line):find(wanted, 1, true) then return true end
+            end
+        end
         return false
     end
     local function roster() wow.printed = {}; fire("GROUP_ROSTER_UPDATE") end
@@ -178,54 +184,57 @@ do
     fire("PLAYER_ENTERING_WORLD")
     members.party1 = true
     roster()
-    equal(said("New party!"), true, "joining a party reminds")
+    equal(said("join"), true, "joining a party reminds")
+    equal(ns.MarkWindow:IsShown(), true, "joining a party opens the marking window")
+    ns.MarkWindow:Close()
     members.party2 = true; clock = clock + 60
     roster()
-    equal(said("Someone new"), false, "a newcomer is quiet by default")
+    equal(said("member"), true, "a newcomer reminds by default")
+    members.party3 = true
+    roster()
+    equal(said("member"), false, "reminders are throttled")
+    ns.db.remind_on_member = false
+    members.party4 = true; clock = clock + 60
+    roster()
+    equal(said("member"), false, "the newcomer reminder can be turned off")
     ns.db.remind_on_member = true
-    members.party3 = true; clock = clock + 60
-    roster()
-    equal(said("Someone new"), true, "newcomer reminder when turned on")
-    members.party4 = true
-    roster()
-    equal(said("Someone new"), false, "reminders are throttled")
 
     members.party1, members.party2, members.party3, members.party4 = nil, nil, nil, nil
     roster()
     combat = true; members.party1 = true; clock = clock + 60
     roster()
-    equal(said("New party!"), false, "never in combat")
+    equal(said("join"), false, "never in combat")
     combat = false; wow.printed = {}
     fire("PLAYER_REGEN_ENABLED")
-    equal(said("New party!"), true, "a reminder due in combat waits for it to end")
+    equal(said("join"), true, "a reminder due in combat waits for it to end")
 
     members.party1 = nil; roster()
     leader = false; members.party1 = true; clock = clock + 60
     roster()
-    equal(said("New party!"), true, "leader-only is off by default")
+    equal(said("join"), true, "leader-only is off by default")
     members.party1 = nil; roster()
     ns.db.remind_leader_only = true; members.party1 = true; clock = clock + 60
     roster()
-    equal(said("New party!"), false, "leader-only stays quiet for others")
+    equal(said("join"), false, "leader-only stays quiet for others")
     ns.db.remind_leader_only, leader = false, true
 
     -- Show rules: a reminder waits until the grid can show.
     members.party1 = nil; roster()
     ns.db.visibility.dungeon = true; members.party1 = true; clock = clock + 60
     roster()
-    equal(said("New party!"), false, "the grid's Show rules hold the reminder back")
+    equal(said("join"), false, "the grid's Show rules hold the reminder back")
     instanceKind = "party"; wow.printed = {}
     fire("ZONE_CHANGED_NEW_AREA")
-    equal(said("New party!"), true, "zoning in where the grid shows delivers it")
+    equal(said("join"), true, "zoning in where the grid shows delivers it")
     wow.printed = {}
     fire("ZONE_CHANGED_NEW_AREA")
-    equal(said("New party!"), false, "an owed reminder is delivered once")
+    equal(said("join"), false, "an owed reminder is delivered once")
     ns.db.visibility.dungeon, instanceKind = nil, nil
 
     members.party1 = nil; roster()
     ns.db.remind_enabled = false; members.party1 = true; clock = clock + 60
     roster()
-    equal(said("New party!"), false, "the reminder can be turned off")
+    equal(said("join"), false, "the reminder can be turned off")
     ns.db.remind_enabled = true
 
     -- Reloading inside a party isn't joining one.
@@ -238,9 +247,9 @@ do
     wow.printed = {}
     core.scripts.OnEvent(core, "PLAYER_ENTERING_WORLD")
     core.scripts.OnEvent(core, "GROUP_ROSTER_UPDATE")
-    equal(said("New party!"), false, "a reload in a party stays quiet")
+    equal(said("join"), false, "a reload in a party stays quiet")
 
-    ns.db.remind_chat, ns.db.remind_screen, ns.db.remind_sound = false, false, false
+    ns.db.remind_chat, ns.db.remind_screen, ns.db.remind_sound, ns.db.remind_window = false, false, false, false
     wow.printed = {}
     ns.Reminder:Test()
     equal(said("every reminder output is off"), true, "test explains a silent setup")
@@ -273,6 +282,40 @@ do
     ns.db.visibility_mode = "HIDDEN"
     ns.applyVisibility()
     equal(lastDriver, "hide", "Never wins")
+end
+
+-- Minimap right-click: HammerCore's menu with CheckMark's extras.
+do
+    local ns = loadAddon("CheckMark.toc", nil)
+    local HC = ns.HammerCore
+    equal(HC.Minimap.RightClickMode(), "menu", "the minimap right-click opens the menu")
+    local function find(text)
+        for _, item in ipairs(HC.Minimap:MenuItems()) do
+            if item.text == text then return item end
+        end
+    end
+    local solo = find("Preview marking window")
+    equal(solo ~= nil, true, "solo, the menu previews the marking window")
+    solo.func()
+    equal(ns.MarkWindow:IsShown(), true, "the preview opens")
+    equal(ns.MarkWindow.test, true, "solo, it's the sample party")
+    ns.MarkWindow:Close()
+    local reminder = find("Mark reminder")
+    equal(reminder.checked, true, "the reminder starts on")
+    reminder.func()
+    equal(ns.db.remind_enabled, false, "the menu turns the reminder off")
+    equal(find("Mark reminder").checked, false, "and shows it off")
+    equal(find("Show grid") ~= nil, true, "the grid toggle is there")
+    InCombatLockdown = function() return true end
+    equal(find("Preview marking window").disabled, true, "no marking window in combat")
+    InCombatLockdown = function() return false end
+    IsInGroup = function() return true end
+    UnitExists = function(unit) return unit == "player" or unit == "party1" end
+    local party = find("Mark the party")
+    equal(party ~= nil, true, "in a party, the menu marks it")
+    party.func()
+    equal(ns.MarkWindow:IsShown(), true, "the marking window opens")
+    equal(ns.MarkWindow.test, false, "for the real party")
 end
 
 io.write("addon tests passed\n")

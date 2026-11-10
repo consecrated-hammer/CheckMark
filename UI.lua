@@ -5,7 +5,7 @@ local addon, ns = ...
 
 local T = ns.Theme
 local panel, handle
-local cells, currentMembers, currentAssignments = {}, {}, {}
+local cells, currentMembers, currentAssignments, currentPlan = {}, {}, {}, {}
 local MAX_CELLS = 5
 
 local function savePosition()
@@ -14,10 +14,6 @@ local function savePosition()
 end
 
 local function markerName(marker) return ns.MARKER_NAMES[marker] or "Marker" end
-local function roleLabel(member, slots)
-    local slot = slots and slots[member.fullName]
-    return slot and ns.ROLE_SLOT_LABELS[slot] or "Party member"
-end
 
 -- Shared with the live preview window (Preview.lua).
 local function layout(count)
@@ -102,8 +98,9 @@ local function makeCell(parent, index)
         -- The native secure raid-target action has just been submitted.  Keep
         -- feedback on the left-click set action only: right click clears a
         -- marker and an unassigned cell merely opens the marker settings.
-        if self.marker and self.marker > 0 and button == "LeftButton" and ns.playMarkerSound then
-            ns.playMarkerSound()
+        if self.marker and self.marker > 0 and button == "LeftButton" then
+            if ns.playMarkerSound then ns.playMarkerSound() end
+            ns.Assign.Marked(self.slot)
         end
         if self.marker == 0 and button == "LeftButton" then ns.HammerCore.Settings:Show("Markers") end
     end)
@@ -115,23 +112,23 @@ local function makeCell(parent, index)
 end
 
 
-local function styleCell(cell, member, label)
-    local marker = currentAssignments[member.fullName] or 0
-    cell.marker = marker
-    cell.label = label .. " · " .. member.name
-    paintCell(cell, marker, member.name)
+local function styleCell(cell, slot)
+    local member = slot.member
+    cell.slot = slot
+    cell.marker = slot.marker
+    cell.label = (member.label or member.name) .. " · " .. (ns.Assign.SOURCE_LABELS[slot.source] or "")
+    paintCell(cell, slot.marker, member.label or member.name)
 end
 
 local function refreshCells()
     local grid = layout(#currentMembers)
     panel:SetSize(grid.frameWidth, grid.frameHeight)
-    local _, slots = ns.assignRoleSlots(currentMembers)
     for i = 1, MAX_CELLS do
         local cell, member = cells[i], currentMembers[i]
-        if member then
+        if member and currentPlan[i] then
             local n = i - 1; local col, row = n % grid.columns, math.floor(n / grid.columns)
             cell:SetSize(grid.width, grid.height); cell:ClearAllPoints(); cell:SetPoint("TOPLEFT", panel, "TOPLEFT", col * (grid.width + grid.spacing), -row * (grid.height + grid.spacing))
-            styleCell(cell, member, roleLabel(member, slots)); cell:Show()
+            styleCell(cell, currentPlan[i]); cell:Show()
         else cell:Hide() end
     end
     ns.bindMarkerCells(cells, currentMembers, currentAssignments)
@@ -171,8 +168,9 @@ end
 function ns.refreshPopup()
     if InCombatLockdown and InCombatLockdown() then return end
     if not panel or not panel:IsShown() then return end
-    currentMembers = ns.getTemplateMembers(ns.getGroupMembers())
-    currentAssignments = ns.buildDefaultAssignments(currentMembers)
+    currentMembers = ns.Identity.Label(ns.getGroupMembers())
+    currentPlan = ns.Assign.Plan(currentMembers)
+    currentAssignments = ns.Assign.Markers(currentPlan)
     refreshCells()
 end
 -- Show conditions, on top of "in a two-to-five player party, out of
@@ -227,6 +225,18 @@ function ns.applyVisibility()
         RegisterStateDriver(panel, "visibility", "[combat] hide; [group:party] show; hide")
     end
 end
+-- The grid's saved position (each profile has its own).
+function ns.placePopup()
+    if not panel or (InCombatLockdown and InCombatLockdown()) then return end
+    local p = ns.db.popup_position
+    panel:ClearAllPoints()
+    if p then
+        panel:SetPoint(p.point or "CENTER", UIParent, p.relativePoint or "CENTER", p.x or 0, p.y or 0)
+    else
+        panel:SetPoint("CENTER", UIParent, "CENTER", 250, 80)
+    end
+end
+
 function ns.showPopup()
     if InCombatLockdown and InCombatLockdown() then ns.notify("CheckMark can't mark in combat. Try again once it's over."); return end
     if not ns.isEligibleGroup() then
@@ -235,10 +245,11 @@ function ns.showPopup()
     end
     if not panel then buildPanel() end
     if ns.db.panel_hidden then ns.applyVisibility(); return end
-    if ns.db.popup_position then local p = ns.db.popup_position; panel:ClearAllPoints(); panel:SetPoint(p.point or "CENTER", UIParent, p.relativePoint or "CENTER", p.x or 0, p.y or 0) end
+    ns.placePopup()
     panel:Show(); ns.refreshPopup(); ns.updateHandle(); ns.applyVisibility()
 end
 function ns.hidePopup() if panel then panel:Hide() end end
+function ns.isPopupShown() return panel ~= nil and panel:IsShown() and not ns.db.panel_hidden end
 function ns.togglePopup()
     if InCombatLockdown and InCombatLockdown() then
         ns.notify("CheckMark can't mark in combat. Try again once it's over.")

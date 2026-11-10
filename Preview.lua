@@ -11,11 +11,6 @@ ns.Preview = Preview
 local WINDOW_MIN_WIDTH, WINDOW_PAD, WINDOW_HEADER, WINDOW_CONTROLS = 360, 16, 40, 80
 local HANDLE_ROOM = 14
 local MAX_MEMBERS = 5
--- Sample party in role order, so each gets that role's marker.
-local SAMPLE = {
-    { name = "Brakka", slot = "TANK" }, { name = "Seliora", slot = "HEALER" },
-    { name = "Tamsin", slot = "DPS1" }, { name = "Oduu", slot = "DPS2" }, { name = "Pip", slot = "DPS3" },
-}
 
 Preview.DEFAULTS = {
     preview_window_open = false,
@@ -195,16 +190,23 @@ function Preview:Refresh()
 
     local layout = ns.Grid.Layout(count)
     parts.grid:SetSize(layout.frameWidth, layout.frameHeight)
+    -- The sample party (a tank, a healer, three DPS) through the active
+    -- profile's rules, so the preview shows what a real party would get.
+    local members = {}
+    for i, member in ipairs(ns.MarkWindow.SampleMembers()) do
+        if i <= count then members[i] = member end
+    end
+    local plan = ns.Assign.Plan(members)
     for i, cell in ipairs(parts.cells) do
-        local sample = SAMPLE[i]
-        if i <= count then
+        local slot = plan[i]
+        if slot then
             local n = i - 1
             local col, row = n % layout.columns, math.floor(n / layout.columns)
             cell:SetSize(layout.width, layout.height)
             cell:ClearAllPoints()
             cell:SetPoint("TOPLEFT", parts.grid, "TOPLEFT", col * (layout.width + layout.spacing),
                 -row * (layout.height + layout.spacing))
-            ns.Grid.PaintCell(cell, ns.getRoleMarker(sample.slot), sample.name)
+            ns.Grid.PaintCell(cell, slot.marker, slot.member.label)
             cell:Show()
         else
             cell:Hide()
@@ -236,7 +238,8 @@ function Preview:Refresh()
     parts.grid:SetPoint("CENTER", parts.viewport, "CENTER", 0, 0)
     self.window:SetSize(innerWidth + WINDOW_PAD * 2, WINDOW_HEADER + WINDOW_CONTROLS + 22 + innerHeight + WINDOW_PAD)
     parts.note:SetText(fit < 1 and ("Scaled to %d%% to fit your screen."):format(math.floor(fit * 100 + 0.5))
-        or ("Actual size, %d members. Markers follow the Markers page."):format(count))
+        or ("Actual size, %d members. Markers follow the Markers page and the %s profile."):format(count,
+            ns.HammerCore.Profiles:Active() or "active"))
 end
 
 -- Redraw whenever the grid or its handle would.
