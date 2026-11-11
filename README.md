@@ -1,8 +1,6 @@
 # CheckMark
 
-**Raid markers for your party, so everyone's easy to spot.**
-
-_Skull on the tank, every time._
+**Raid markers for your party, so everyone's easy to spot.**<br>_Skull on the tank, every time._
 
 [![Retail](https://img.shields.io/badge/retail-supported-4c9a7a?style=flat-square)](https://www.curseforge.com/wow/addons/checkmark) [![WoW Forever](https://img.shields.io/badge/wow%20forever-supported-4c9a7a?style=flat-square)](https://www.curseforge.com/wow/addons/checkmark) [![Release](https://img.shields.io/github/v/release/consecrated-hammer/CheckMark?style=flat-square&color=4c9a7a&label=release)](https://github.com/consecrated-hammer/CheckMark/releases) [![License](https://img.shields.io/badge/license-GPL--3.0-4c9a7a?style=flat-square)](https://github.com/consecrated-hammer/CheckMark/blob/main/LICENSE.txt)
 
