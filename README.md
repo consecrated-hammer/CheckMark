@@ -19,7 +19,7 @@ CheckMark puts a raid marker on each party member so you can spot them at a glan
 - **Mark party window.** When your party forms or someone joins, a window shows a big card for each member with their marker. Click a card to mark them, right-click to clear, click the icon to pick another marker, or pin them. It waits a couple of seconds after people join and a few after combat, so you can loot first.
 - **Markers follow people.** Pin someone to a marker and they keep it whatever the party order or leader. Battle.net friends are matched by BattleTag, so they keep it on every character.
 - **It learns.** CheckMark remembers the markers you give people. Party members running CheckMark share who they marked with what, so a regular crew stays consistent.
-- **Who goes first.** Pinned people, role markers (Tank = Skull, Healer = Diamond) and a fill order for everyone else, with pinned people and roles in the order you choose, learned assignments next and fill order last. Manual picks for this party come first.
+- **Who goes first.** Your manual picks for this party come first. Pinned people and role markers (Tank = Skull, Healer = Diamond) follow in the order you choose, then learned assignments when pinned people are included, then fill order.
 - **Profiles.** World, Delve and Dungeon switch automatically. Dungeon puts roles first and the world puts regulars first; change either on the Markers page.
 - **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
 - **Two to five players**, out questing or in follower dungeons, dungeons and delves.

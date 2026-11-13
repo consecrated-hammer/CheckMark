@@ -153,7 +153,7 @@ local WHATS_NEW = {
             page = "Reminder" },
         { title = "Markers follow people", text = "Pin someone to a marker and they keep it on any of their characters if they're a Battle.net friend.",
             page = "Markers" },
-        { title = "It learns", text = "CheckMark remembers the markers you pick, and party members running CheckMark share theirs. Manage pinned and learned people on Markers > People.",
+        { title = "It learns", text = "CheckMark remembers the markers you pick, and party members running CheckMark share theirs. Manage pinned and learned people on Markers > Regulars.",
             page = "Markers", tab = "People" },
         { title = "World, Delve, Dungeon", text = "Profiles switch automatically, so dungeons can go by role and the open world by who's who.",
             page = "Profiles" },
@@ -167,7 +167,7 @@ local WHATS_NEW = {
     { version = "1.3.0", date = "2026-11-09", items = {
         { title = "Mark reminder", text = "Join a party and CheckMark nudges you to mark everyone. Choose when and how on the Reminder page, or turn it off.",
             page = "Reminder" },
-        { title = "Live preview", text = "Show live preview at the top of Grid and Markers draws your grid at actual size with a sample party, in its own window.",
+        { title = "Live preview", text = "Show live preview at the top of Panel and Markers draws your grid at actual size with a sample party, in its own window.",
             kind = "improved", page = "CheckMark" },
         { title = "Show rules", text = "Show the grid only in dungeons, delves, the open world or when you lead. Tick any mix on Visibility.",
             page = "Visibility" },
@@ -180,7 +180,7 @@ local WHATS_NEW = {
     } },
     -- History: written after the fact for releases from before What's new.
     { version = "1.2.0", date = "2026-09-26", history = true, items = {
-        { text = "Find missing sounds finds marker sounds your client can't play.", page = "Sounds" },
+        { text = "Check sounds finds marker sounds your client can't play.", page = "Sounds" },
         "A lore quiz, and the same commands and settings layout as every Consecrated Hammer addon.",
     } },
     { version = "1.1.0", date = "2026-09-13", history = true, items = {

@@ -107,8 +107,11 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     for rule, text in pairs(expectedOrders) do
         db.marker_rules = rule
         refresh("Markers", "Assignments")
-        equal(HC.Settings.pages.Markers.bodies.Assignments.content.assignmentOrder:GetText(), text,
+        local short = text:gsub("^Order: party picks", "Your picks"):gsub("tank and healer", "tank/healer")
+            :gsub("learned people", "learned"):gsub(", ", " > ")
+        equal(HC.Settings.pages.Markers.bodies.Assignments.content.assignmentOrder:GetText(), short,
             "visible order follows " .. rule)
+        assert(#short <= 64, "order stays concise; native text width still needs client acceptance")
     end
     local reminder = rows("Reminder", "When and how")
     local seconds = reminder["Seconds after joining"]
@@ -137,6 +140,16 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(HC.Settings:Focus("Sounds", "Available sounds"), sounds["Play marker sounds"], "disabled sounds focus master")
     equal(HC.Settings:Focus("Sounds", "Find missing sounds"), sounds["Find missing sounds"], "sound diagnosis remains available")
     equal(HC.Settings:Focus("Sounds", "Test sound"), sounds["Test sound"], "sound test remains available")
+    local playback
+    for _, frame in ipairs(wow.frames) do
+        if frame:GetParent() == sounds.Playback and rawget(frame, "Text") then playback = frame end
+    end
+    assert(playback, "standard Playback dropdown exists")
+    for _, value in ipairs({ "INVALID", false, "SEQUENTIAL" }) do
+        db.marker_sound_mode = value or nil
+        refresh("Sounds")
+        equal(playback:GetText(), value == "SEQUENTIAL" and "Sequential" or "Random", "Playback defaults invalid or nil to Random")
+    end
     local _, _, testY = sounds["Test sound"]:GetPoint()
     local _, _, findY = sounds["Find missing sounds"]:GetPoint()
     assert(testY > findY, "sound test comes before diagnosis")

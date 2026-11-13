@@ -231,7 +231,9 @@ local function assignments(panel, y)
         return "First, " .. order:gsub("party picks", "anyone you pick by hand in this party"):gsub(", ", ", then ")
     end)
     O.OnRefresh(panel, function()
-        where:SetText("Order: " .. (orders[db.marker_rules] or orders.REGULARS_ROLES))
+        local order = orders[db.marker_rules] or orders.REGULARS_ROLES
+        where:SetText(order:gsub("party picks", "Your picks"):gsub("tank and healer", "tank/healer")
+            :gsub("learned people", "learned"):gsub(", ", " > "))
     end)
 
     _, y = O.Header(panel, "Role markers (per profile)", y, ICONS.roles)
@@ -340,8 +342,8 @@ local function regulars(panel, y)
             rebuild()
         end)
     _, y = O.ActionButton(controls, y, "Forget learned", function()
-        local count = 0
-        for _, item in ipairs(ns.Assign.List()) do if not item.pinned then count = count + 1 end end
+        local count = ns.Assign.LearnedCount()
+        if count == 0 then HC.Print("No learned people to forget."); return end
         HC.Dialog:Confirm({ title = "Forget learned", text = "Forget " .. count .. " learned "
             .. (count == 1 and "person" or "people") .. "? Pinned people stay.", accept = "Forget",
             onAccept = function() ns.Assign.ForgetLearned(); rebuild() end })

@@ -150,9 +150,19 @@ end
 
 function Assign.Forget(key) regulars()[key] = nil; refreshRegulars() end
 
+local function forgettable(entry)
+    return type(entry) ~= "table" or not entry.pinned
+end
+
+function Assign.LearnedCount()
+    local count = 0
+    for _, entry in pairs(regulars()) do if forgettable(entry) then count = count + 1 end end
+    return count
+end
+
 function Assign.ForgetLearned()
     for key, entry in pairs(regulars()) do
-        if type(entry) ~= "table" or not entry.pinned then regulars()[key] = nil end
+        if forgettable(entry) then regulars()[key] = nil end
     end
     refreshRegulars()
 end

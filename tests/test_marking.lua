@@ -400,6 +400,19 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(page.selectedTab, "People", toc .. ": edits keep the People tab")
     equal(#A.List(), 1, toc .. ": forget learned preserves pinned regulars")
     equal(body.regularRows[2]:IsShown(), false, toc .. ": removed entry is hidden")
+    ns.db.regulars.badMarker = { marker = "not a marker", pinned = false }
+    ns.db.regulars.badEntry = "malformed"
+    ns.db.regulars.badPinned = { marker = nil, pinned = true }
+    equal(A.LearnedCount(), 2, toc .. ": hidden malformed entries count toward forgetting")
+    forget.scripts.OnClick(forget)
+    equal(dialog.current.text, "Forget 2 learned people? Pinned people stay.", toc .. ": confirmation matches the deletion predicate")
+    wow.Click(dialog.frame.accept)
+    equal(ns.db.regulars.badMarker, nil, toc .. ": malformed unpinned marker is forgotten")
+    equal(ns.db.regulars.badEntry, nil, toc .. ": malformed entry is forgotten")
+    assert(ns.db.regulars.badPinned, "malformed pinned entry stays")
+    forget.scripts.OnClick(forget)
+    equal(dialog:IsShown(), false, toc .. ": empty learned list needs no confirmation")
+
     assert(body.regularRows[1].Title.text:find("Bianca", 1, true), "remaining row is rebound to its regular")
     body.regularRows[1].remove.scripts.OnClick(body.regularRows[1].remove)
     equal(#A.List(), 0, toc .. ": remove targets the rebound row")

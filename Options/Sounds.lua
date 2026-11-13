@@ -51,7 +51,7 @@ HC.Settings:NewPage({
 
     _, y = O.Dropdown(panel, "Playback", "Random chooses from selected sounds. Sequential follows the selected sounds in catalogue order.",
         y, { "RANDOM", "SEQUENTIAL" }, { "Random", "Sequential" },
-        function() return ns.db.marker_sound_mode end,
+        function() return ns.db.marker_sound_mode == "SEQUENTIAL" and "SEQUENTIAL" or "RANDOM" end,
         function(value) ns.db.marker_sound_mode = value end)
 
     flow:Add(panel, -y + 4, function() return ns.db.marker_sound_enabled ~= false end)

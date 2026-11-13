@@ -6,15 +6,13 @@
 
 - Markers shows the rule order in plain words. Learning and Add controls stay above the People list, and Forget learned asks before removing anyone.
 - Playback uses one dropdown; Test sound comes before Find missing sounds.
-
 - Grid, People, marker rules and sound controls now use the same plain names throughout settings and search.
-
-- Panel now groups Layout and Position in tabs. Visibility resets only grid show rules.
+- Grid now groups Layout and Position in tabs. Visibility resets only grid show rules.
 - Reminder separates When and how from Marking window, with independent resets and dependent controls that close up without gaps.
-- All Panel controls and layout presets are searchable. Hidden options focus the switch that enables them.
-- Regulars lists every saved person, keeps search current after edits and explains pinned versus learned assignments.
+- All Grid controls and layout presets are searchable. Hidden options focus the switch that enables them.
+- People lists every saved person, keeps search current after edits and explains pinned versus learned assignments.
 - Assignment precedence and duplicate-marker fallback are explained, with a Mark the party shortcut beside the plan.
-- Sound selection hides when disabled, while Check sounds and Test sound stay available. Profiles now sits after the everyday settings pages.
+- Sound selection hides when disabled, while Find missing sounds and Test sound stay available. Profiles now sits after the everyday settings pages.
 - SavedVariables keys, schema, profile scope, defaults and gameplay behaviour are unchanged.
 
 ## [1.4.0] - 2026-11-10
