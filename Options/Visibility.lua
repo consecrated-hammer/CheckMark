@@ -19,8 +19,9 @@ HC.spec.visibility = function(panel, y)
         if ns.applyVisibility then ns.applyVisibility() end
     end
 
-    _, y = O.Text(panel, "Grid rules save in the active profile. Minimap, update and settings-window options below are shared.", y)
-    _, y = O.Header(panel, "Grid (per profile)", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6")
+    O.SetScope(panel, "profile")
+    _, y = O.ScopeLegend(panel, y)
+    _, y = O.Header(panel, "Grid", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6")
     local function setBase(mode)
         db.visibility_mode = mode
         db.visibility = {}
@@ -51,24 +52,35 @@ HC.spec.visibility = function(panel, y)
         "Choose Always or Never, or tick several rules; any matching rule shows the grid. It's only ever in a party of two to five, and always hides in combat.",
         y, { items = items, summary = ns.gridVisibilitySummary }, 264)
 
-    _, y = O.PageReset(panel, y, function()
+    -- This action also clears the shared manual hide flag, so it is mixed
+    -- scope and deliberately has no profile-only glyph.
+    O.SetScope(panel, "shared")
+    local reset
+    reset, y = O.PageReset(panel, y, function()
         db.visibility_mode = "ALWAYS"
         db.visibility = {}
         db.panel_hidden = false
         refreshVisibility()
     end, "Reset grid visibility")
+    reset.hcHint = "Reset this profile's grid show rules and clear the shared manual Hide grid toggle. Minimap, update and window preferences stay."
+    -- HammerCore appends shared minimap, update and window preferences here.
+    O.SetScope(panel, "shared")
     return y
 end
 
 -- Position is part of the grid layout, separate from visibility rules.
 function ns.BuildGridPosition(panel)
     local O, db = ns.Options, ns.db
+    O.SetScope(panel, "profile")
     local flow = O.Flow(panel)
+    local legend = O.Section(panel, 1)
+    local _, legendY = O.ScopeLegend(legend, -4)
+    flow:Add(legend, -legendY + 4)
     local function updateHandle() if ns.updateHandle then ns.updateHandle() end end
     local frame = O.Section(panel, 1)
     local y = -8
     local master
-    _, y = O.Header(frame, "Grid position (per profile)", y)
+    _, y = O.Header(frame, "Grid position", y)
     master, y = O.Check(frame, "Show drag handle", "Drag to move the grid; right-click for settings.", y,
         function() return db.show_handle ~= false end,
         function(value) db.show_handle = value; updateHandle() end)

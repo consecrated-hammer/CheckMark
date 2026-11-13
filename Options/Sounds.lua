@@ -29,6 +29,7 @@ HC.Settings:NewPage({
     group = "main", profileScope = false,
     description = "A sound when you click a marker onto someone.",
 }, function(panel, y)
+    O.SetScope(panel, "shared")
     local flow = O.Flow(panel)
     local root = panel
     panel = O.Section(root, 1)

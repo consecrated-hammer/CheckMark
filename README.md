@@ -44,7 +44,9 @@ In a party, `/checkmark toggle` or **Show grid** on the minimap menu shows the g
 - **Visibility:** grid show rules, then shared minimap, update and settings-window choices.
 - **Profiles:** World, Delve and Dungeon, automatic switching, and profile management.
 
-The active profile saves assignments, grid layout, position and show rules. Pinned and learned people, learning, sharing, reminders, marking-window options and sounds are shared. Turning a feature off hides its dependent controls; search still finds them and highlights the switch that enables them.
+A small profile icon marks settings saved in the active profile. The legend appears
+once on each affected page or tab; unmarked preferences are shared. The active profile
+saves assignments, grid layout, position and show rules. Pinned and learned people, learning, sharing, reminders, marking-window options and sounds are shared. Turning a feature off hides its dependent controls; search still finds them and highlights the switch that enables them.
 
 Page and tab resets affect only their named settings. Reset grid visibility keeps your position, handle and shared HammerCore preferences. Re-centre grid moves only the grid; Reset grid position also restores its handle. Forget learned removes unpinned learned people across all profiles, keeps pinned people and current party picks, and leaves learning enabled.
 

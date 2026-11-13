@@ -97,6 +97,63 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
             wow.Click(HC.Dialog.frame.accept)
         end
     end
+    -- Scope metadata follows the real profile storage contract in Setup.lua.
+    local profileKeys = {}
+    for _, group in ipairs(HC.Profiles.spec.groups) do
+        for _, key in ipairs(group.keys) do profileKeys[key] = true end
+    end
+    local mapped = {
+        { "CheckMark", "Layout", {
+            Compact = "cell_width", Named = "cell_width", Oversized = "cell_width",
+            ["Cells per row"] = "cell_columns", Spacing = "cell_spacing", Width = "cell_width",
+            Height = "cell_height", ["Icon size"] = "icon_size", ["Player names"] = "show_cell_names",
+            ["Reset grid layout"] = "cell_width",
+        } },
+        { "CheckMark", "Position", {
+            ["Show drag handle"] = "show_handle", ["Handle position"] = "handle_position",
+            ["Re-centre grid"] = "popup_position", ["Reset grid position"] = "popup_position",
+        } },
+        { "Markers", "Assignments", {
+            ["Mark the party"] = false, ["Who goes first"] = "marker_rules", Tank = "role_template",
+            Healer = "role_template", ["Fill order"] = "fill_order", ["Reset assignments"] = "marker_rules",
+        } },
+        { "Visibility", nil, { ["Show grid"] = "visibility_mode", ["Reset grid visibility"] = false } },
+    }
+    local function checkScope(row, expected, label)
+        equal(row.hcSettingScope, expected, label .. " storage scope")
+        if expected == "profile" then
+            assert(row.hcScopeIcon and row.hcScopeIcon:IsShown(), label .. " has a profile icon")
+        else
+            assert(not row.hcScopeIcon or not row.hcScopeIcon:IsShown(), label .. " has no profile icon")
+        end
+    end
+    for _, item in ipairs(mapped) do
+        local page, tab, bindings = item[1], item[2], item[3]
+        local body = HC.Settings.pages[page].bodies[tab or page]
+        assert(body.hcScopeLegend, page .. "/" .. tostring(tab) .. " has one scope legend")
+        for label in pairs(bindings) do assert(body.hcRows[label], "scope target remains searchable: " .. label) end
+        for label, row in pairs(body.hcRows) do
+            local key = bindings[label]
+            if key then assert(profileKeys[key], label .. " maps to a declared profile key") end
+            checkScope(row, key and "profile" or "shared", label)
+        end
+    end
+    for _, pageTab in ipairs({ { "Markers", "People" }, { "Reminder", "When and how" },
+        { "Reminder", "Marking window" }, { "Sounds", "Sounds" } }) do
+        local body = HC.Settings.pages[pageTab[1]].bodies[pageTab[2]]
+        assert(not body.hcScopeLegend, "shared-only tabs need no repeated legend")
+        for label, row in pairs(body.hcRows) do checkScope(row, "shared", label) end
+    end
+    assert(not profileKeys.panel_hidden, "manual grid hide is a shared setting")
+    assert(rows("Visibility")["Reset grid visibility"].hcHint:find("shared manual Hide grid", 1, true),
+        "mixed visibility reset explains its shared effect")
+    for _, label in ipairs({ "Compact", "Named", "Oversized" }) do
+        local preset = rows("CheckMark", "Layout")[label]
+        local _, textX = preset.Text:GetPoint()
+        local _, _, _, glyphX = preset.hcScopeMarker:GetPoint()
+        assert(glyphX + preset.hcScopeMarker:GetWidth() <= textX, label .. " reserves a clear glyph gutter")
+        equal(preset:GetWidth(), math.floor((HC.UI.CONTENT_WIDTH - 12) / 3), "preset width remains unchanged")
+    end
     local expectedOrders = {
         REGULARS_ROLES = "Order: party picks, pinned people, tank and healer, learned people, fill order.",
         ROLES_REGULARS = "Order: party picks, tank and healer, pinned people, learned people, fill order.",
@@ -159,7 +216,9 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(HC.Settings:Focus("CheckMark", "Handle position", "Position"), position["Show drag handle"], "hidden handle position focuses switch")
     db.popup_position = { "TOPLEFT", "TOPLEFT", 50, -60 }
     HC.State().minimap = false; HC.State().startupMessage = false
+    db.panel_hidden = true
     click("Visibility", nil, "Reset grid visibility")
+    equal(db.panel_hidden, false, "mixed visibility reset still clears shared manual hiding")
     equal(db.popup_position[3], 50, "visibility reset preserves position")
     equal(db.show_handle, false, "visibility reset preserves handle")
     equal(HC.State().minimap, false, "visibility reset preserves minimap")
@@ -196,6 +255,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     refresh("Markers", "People")
     local body = HC.Settings.pages.Markers.bodies.People.content
     equal(#body.regularRows, 27, "all regulars get rows")
+    for _, row in ipairs(body.regularRows) do checkScope(row, "shared", "dynamic person") end
     local controls = HC.Settings.pages.Markers.bodies.People.hcRows["Add a Battle.net friend"]:GetParent()
     local _, _, _, _, controlsTop = controls:GetPoint()
     local _, _, _, _, listTop = body.regularRows[1]:GetParent():GetPoint()

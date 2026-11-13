@@ -120,3 +120,15 @@ keeps learning and Add controls above the growing list; existing pinned-first
 sorting is retained. Forget learned shows a count and confirms before clearing,
 while single-person removal stays immediate. Sounds uses a standard Playback
 dropdown and puts Test sound before Find missing sounds.
+
+## Setting scope markers
+
+Grid Layout and Position, marker assignments, and grid Visibility rules use the
+shared HammerCore profile glyph and one legend on each affected page or tab.
+The glyph follows the keys in Setup.lua profile groups. People, learning,
+reminders, sounds, and the standard Visibility preferences stay unmarked and
+shared. Search labels and the saved profile keys are unchanged.
+
+Reset grid visibility is a mixed-scope action: it restores profile show rules
+and clears the shared manual Hide grid toggle. It stays unmarked and its
+tooltip names both effects. Preset cards reserve a separate glyph gutter.

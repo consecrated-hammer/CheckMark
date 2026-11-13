@@ -203,10 +203,13 @@ end
 
 local function assignments(panel, y)
     local db = ns.db
+    O.SetScope(panel, "shared")
+    _, y = O.ScopeLegend(panel, y)
 
     _, y = O.ActionButton(panel, y, "Mark the party", function()
         if ns.isEligibleGroup() then ns.MarkWindow:Open() else ns.MarkWindow:Test() end
     end, "Open the marking window. Click each member to mark them; solo opens a sample party. Unavailable in combat.", "primary")
+    O.SetScope(panel, "profile")
     _, y = O.Header(panel, "Who goes first", y, ICONS.rules)
     local values, labels = {}, {}
     for index, rule in ipairs(ns.Assign.RULES) do values[index], labels[index] = rule.value, rule.label end
@@ -236,7 +239,7 @@ local function assignments(panel, y)
             :gsub("learned people", "learned"):gsub(", ", " > "))
     end)
 
-    _, y = O.Header(panel, "Role markers (per profile)", y, ICONS.roles)
+    _, y = O.Header(panel, "Role markers", y, ICONS.roles)
     for _, slot in ipairs(ns.ROLE_SLOTS) do
         local row = O.Row(panel, y, 34, ns.ROLE_SLOT_LABELS[slot], "The marker for the party's " .. ns.ROLE_SLOT_LABELS[slot]:lower() .. ".")
         local _, render = markerSelect(row, 140, function() return db.role_template[slot] or 0 end, function(marker)
@@ -266,8 +269,9 @@ local function assignments(panel, y)
 end
 
 local function regulars(panel, y)
+    O.SetScope(panel, "shared")
     local db = ns.db
-    _, y = O.Header(panel, "People (shared)", y, ICONS.regulars)
+    _, y = O.Header(panel, "People", y, ICONS.regulars)
     _, y = O.Text(panel, "Pinned people always get the marker you chose. Learned people are ones CheckMark remembers from your clicks.", y)
     local list = CreateFrame("Frame", nil, panel)
     list:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y)
@@ -288,7 +292,7 @@ local function regulars(panel, y)
     local listTop = y
     controls:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, listTop)
     y = -4
-    _, y = O.Header(controls, "Learning and party sharing (shared)", y, ICONS.learning)
+    _, y = O.Header(controls, "Learning and party sharing", y, ICONS.learning)
     for _, spec in ipairs({
         { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when pinned people are included.", "learn_mine" },
         { "Share with the party", "Tell party members running CheckMark who you marked with what.", "share_party" },

@@ -4,6 +4,7 @@
 
 ### Changed
 
+- A small profile icon marks settings saved in the active profile, with one legend per page or tab. Repeated scope headings are gone.
 - Markers shows the rule order in plain words. Learning and Add controls stay above the People list, and Forget learned asks before removing anyone.
 - Playback uses one dropdown; Test sound comes before Find missing sounds.
 - Grid, People, marker rules and sound controls now use the same plain names throughout settings and search.

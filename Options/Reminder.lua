@@ -6,6 +6,7 @@ local HC, O = ns.HammerCore, ns.Options
 local WINDOW_KEYS = { remind_window = true, remind_close_done = true, remind_timeout = true,
     remind_timeout_seconds = true, remind_window_size = true }
 local function build(panel, window)
+    O.SetScope(panel, "shared")
     local db, flow = ns.db, O.Flow(panel)
     local function section(fill, visible, parent)
         local frame = O.Section(panel, 1, parent)
@@ -31,7 +32,7 @@ local function build(panel, window)
     end
     if window then
         local master = section(function(frame, y)
-            _, y = O.Header(frame, "Marking window (shared)", y)
+            _, y = O.Header(frame, "Marking window", y)
             local row; row, y = check(frame, y, "Show the marking window",
                 "Open a card for each member when a reminder fires. Click each card to mark them. Manual opening from the minimap remains available.", "remind_window")
             return y, row
@@ -51,7 +52,7 @@ local function build(panel, window)
             "Seconds open", "remind_timeout_seconds", 5, 60, enabled, master)
     else
         local master = section(function(frame, y)
-            _, y = O.Header(frame, "Party reminder (shared)", y)
+            _, y = O.Header(frame, "Party reminder", y)
             local row; row, y = check(frame, y, "Remind me to mark", "Enable automatic reminder triggers. Test reminder still works when this is off.", "remind_enabled")
             return y, row
         end)
