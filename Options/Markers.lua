@@ -118,6 +118,17 @@ local function fillStrip(panel, y)
     end
     monitor:Hide()
     monitor.hcDragOwner = row
+    monitor:SetSize(24, 24)
+    monitor:SetFrameStrata("TOOLTIP")
+    monitor:EnableMouse(false)
+    if not monitor.icon then
+        monitor.icon = monitor:CreateTexture(nil, "ARTWORK")
+        monitor.icon:SetAllPoints()
+    end
+    local insertion = row:CreateTexture(nil, "OVERLAY")
+    insertion:SetSize(2, 32)
+    insertion:SetColorTexture(1, 0.82, 0.2, 1)
+    insertion:Hide()
     local function render()
         local order = ns.Assign.FillOrder(ns.db.fill_order)
         for index, marker in ipairs(order) do
@@ -125,8 +136,32 @@ local function fillStrip(panel, y)
             icons[index].tex:SetTexture(ns.MARKER_TEXTURES[marker])
         end
     end
+    -- The cursor selects a gap, before or after an icon's midpoint. Removing
+    -- the source later adjusts that gap once, preserving insertion semantics.
     local function target()
-        for index, button in ipairs(icons) do if button:IsMouseOver() then return index end end
+        local x, y = GetCursorPosition()
+        local scale = row:GetEffectiveScale()
+        x, y = x / scale, y / scale
+        if x < icons[1]:GetLeft() - 8 or x > icons[8]:GetRight() + 8
+            or y < icons[1]:GetBottom() - 10 or y > icons[1]:GetTop() + 10 then return end
+        for index, button in ipairs(icons) do
+            if x < button:GetLeft() + button:GetWidth() / 2 then return index end
+        end
+        return 9
+    end
+    local function feedback()
+        local x, y = GetCursorPosition()
+        local scale = monitor:GetEffectiveScale()
+        monitor:ClearAllPoints()
+        monitor:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
+        local gap = target()
+        insertion:Hide()
+        if gap then
+            insertion:ClearAllPoints()
+            if gap <= 8 then insertion:SetPoint("CENTER", icons[gap], "LEFT", -2, 0)
+            else insertion:SetPoint("CENTER", icons[8], "RIGHT", 2, 0) end
+            insertion:Show()
+        end
     end
     local function valid()
         return drag and ns.db == drag.db and ns.db.fill_order == drag.order
@@ -136,10 +171,12 @@ local function fillStrip(panel, y)
     local function cancel()
         drag = nil
         if monitor.hcDragOwner == row then monitor:Hide() end
-        for _, button in ipairs(icons) do button:SetAlpha(1); button.drop:Hide() end
+        insertion:Hide()
+        for _, button in ipairs(icons) do button:SetAlpha(1) end
     end
     local function finish()
-        local slot = target()
+        local gap = target()
+        local slot = drag and gap and (gap > drag.index and gap - 1 or gap)
         if valid() and slot and slot ~= drag.index then
             local order = ns.Assign.FillOrder(drag.order)
             local marker = table.remove(order, drag.index)
@@ -151,8 +188,7 @@ local function fillStrip(panel, y)
     monitor:SetScript("OnHide", cancel)
     monitor:SetScript("OnUpdate", function()
         if not valid() then cancel(); return end
-        local slot = target()
-        for index, button in ipairs(icons) do button.drop:SetShown(index == slot) end
+        feedback()
         if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then finish() end
     end)
     for index = 1, 8 do
@@ -161,17 +197,21 @@ local function fillStrip(panel, y)
         button:SetPoint("RIGHT", row, "RIGHT", -O.CELL_INSET - (8 - index) * 28, 0)
         button.tex = button:CreateTexture(nil, "ARTWORK")
         button.tex:SetAllPoints()
-        button.drop = button:CreateTexture(nil, "OVERLAY")
-        button.drop:SetAllPoints(); button.drop:SetColorTexture(1, 0.82, 0.2, 0.45); button.drop:Hide()
         button:RegisterForDrag("LeftButton")
         button:SetScript("OnDragStart", function()
             cancel()
             if InCombatLockdown() then return end
             drag = { index = index, db = ns.db, order = ns.db.fill_order, profile = HC.Profiles:Active() }
-            button:SetAlpha(0.4); GameTooltip:Hide(); monitor:Show()
+            button:SetAlpha(0.3)
+            GameTooltip:Hide()
+            monitor:SetScale(row:GetEffectiveScale() / UIParent:GetEffectiveScale())
+            monitor.icon:SetTexture(ns.MARKER_TEXTURES[button.marker])
+            monitor:Show()
+            feedback()
         end)
         button:SetScript("OnDragStop", finish)
         button:SetScript("OnEnter", function(self)
+            if drag then return end
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
             GameTooltip:SetText(index .. ". " .. markerName(self.marker))
             GameTooltip:AddLine("Drag to a new slot.", 0.85, 0.85, 0.85)
@@ -181,7 +221,7 @@ local function fillStrip(panel, y)
         icons[index] = button
     end
     row:HookScript("OnHide", cancel)
-    row.dragIcons, row.dragMonitor = icons, monitor
+    row.dragIcons, row.dragMonitor, row.dragInsertion = icons, monitor, insertion
     O.OnRefresh(panel, function() cancel(); render() end)
     render()
     return row, row.hcNextY
@@ -309,7 +349,7 @@ local function assignments(panel, y)
     y = O.Columns(panel, 1, y)
     _, y = O.Header(panel, "Fill order", y, ICONS.fill)
     _, y = fillStrip(panel, y)
-    _, y = O.Text(panel, "First to last. Drag a marker onto its new slot; the others move along.", y)
+    _, y = O.Text(panel, "First to last. Drag a marker between icons; the line shows where it will drop.", y)
 
     _, y = O.PageReset(panel, y, function()
         db.role_template = { TANK = ns.Assign.ROLE_DEFAULT.TANK, HEALER = ns.Assign.ROLE_DEFAULT.HEALER }

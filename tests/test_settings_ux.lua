@@ -191,7 +191,14 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     refresh("Markers", "Assignments")
     local strip = rows("Markers", "Assignments")["Fill order"]
     local icons, monitor = strip.dragIcons, strip.dragMonitor
-    local hover
+    local cursorX, cursorY, dragScale, sourceIndex = 0, 112, 1, 1
+    local getCursor = GetCursorPosition
+    GetCursorPosition = function() return cursorX * dragScale, cursorY * dragScale end
+    local parentScale = UIParent.GetEffectiveScale
+    UIParent.GetEffectiveScale = function() return 0.8 end
+    strip.GetEffectiveScale = function() return dragScale end
+    monitor.SetScale = function(self, scale) self.testScale = scale end
+    monitor.GetEffectiveScale = function(self) return UIParent:GetEffectiveScale() * (self.testScale or 1) end
     local markCalls, setRaidTarget = 0, SetRaidTarget
     SetRaidTarget = function() markCalls = markCalls + 1 end
     assert(CheckMarkFillOrderDrag == monitor, "Escape resolves the real drag monitor")
@@ -200,12 +207,22 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     assert(escapeRegistered, "drag cancellation is registered with native Escape dismissal")
     equal(ns.FillOrderDragMonitor, monitor, "drag monitor is cached across page builds")
     for index, icon in ipairs(icons) do
-        icon.IsMouseOver = function() return hover == index end
+        icon.GetLeft = function() return 100 + (index - 1) * 28 end
+        icon.GetRight = function() return 124 + (index - 1) * 28 end
+        icon.GetBottom = function() return 100 end
+        icon.GetTop = function() return 124 end
     end
     local function orderText() return table.concat(db.fill_order, ",") end
     db.fill_order = { 1, 2, 3, 4, 5, 6, 7, 8 }
-    local function start(index) icons[index].scripts.OnDragStart(icons[index]) end
-    local function stop(slot) hover = slot; icons[1].scripts.OnDragStop(icons[1]) end
+    local function start(index)
+        sourceIndex = index
+        cursorX = icons[index]:GetLeft() + 12
+        icons[index].scripts.OnDragStart(icons[index])
+    end
+    local function stop(slot)
+        cursorX = slot and icons[slot]:GetLeft() + (slot >= sourceIndex and 18 or 6) or 0
+        icons[1].scripts.OnDragStop(icons[1])
+    end
     start(1); stop(4)
     equal(orderText(), "2,3,4,1,5,6,7,8", "drop inserts rather than swaps")
     start(4); stop(1)
@@ -213,10 +230,31 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     local unchanged = orderText()
     local mouseDown = IsMouseButtonDown
     IsMouseButtonDown = function() return true end
-    start(1); hover = 3; monitor.scripts.OnUpdate(monitor)
-    equal(icons[3].drop:IsShown(), true, "hovered destination highlights during drag")
-    monitor:Hide()
-    equal(icons[3].drop:IsShown(), false, "cancel clears destination feedback")
+    for _, scale in ipairs({ 0.7, 1.3 }) do
+        dragScale = scale
+        start(1); cursorX = icons[3]:GetLeft() + 6; monitor.scripts.OnUpdate(monitor)
+        equal(monitor:IsShown(), true, "dragged icon is visible")
+        equal(monitor.testScale, scale / UIParent:GetEffectiveScale(), "ghost inherits row scale relative to UIParent")
+        equal(monitor.icon.texture, icons[1].tex.texture, "dragged icon shows the source marker")
+        assert(math.abs(monitor.points[1][4] - cursorX) < 0.001, "ghost follows the scaled cursor horizontally")
+        assert(math.abs(monitor.points[1][5] - cursorY) < 0.001, "ghost follows the scaled cursor vertically")
+        equal(strip.dragInsertion:IsShown(), true, "insertion line is visible")
+        equal(strip.dragInsertion.points[1][2], icons[3], "left half inserts before hovered marker")
+        cursorX = icons[3]:GetLeft() + 18; monitor.scripts.OnUpdate(monitor)
+        equal(strip.dragInsertion.points[1][2], icons[4], "right half inserts after hovered marker")
+        monitor:Hide()
+        equal(strip.dragInsertion:IsShown(), false, "cancel clears insertion line")
+        equal(icons[1]:GetAlpha(), 1, "cancel restores source opacity")
+    end
+    dragScale = 1
+    start(8); cursorX = icons[1]:GetLeft() - 4; icons[8].scripts.OnDragStop(icons[8])
+    equal(orderText(), "8,1,2,3,4,5,6,7", "drop before first marker")
+    start(1); cursorX = icons[8]:GetRight() + 4; icons[1].scripts.OnDragStop(icons[1])
+    equal(orderText(), unchanged, "drop after last marker")
+    start(1); cursorY = 200; monitor.scripts.OnUpdate(monitor)
+    equal(strip.dragInsertion:IsShown(), false, "outside row hides insertion line")
+    icons[1].scripts.OnDragStop(icons[1]); cursorY = 112
+    equal(orderText(), unchanged, "outside row cancels drop")
     IsMouseButtonDown = mouseDown
     start(1); stop(nil)
     equal(orderText(), unchanged, "outside drop cancels")
@@ -254,6 +292,8 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     rule.hcCloseMenu()
     equal(markCalls, 0, "dragging never applies a secure marker")
     SetRaidTarget = setRaidTarget
+    GetCursorPosition = getCursor
+    UIParent.GetEffectiveScale = parentScale
     -- Each control group uses two columns; full-width lists and the long
     -- rule row remain deliberate exceptions.
     for _, item in ipairs({ { "Markers", "Assignments", "Tank" },

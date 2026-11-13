@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Show the dragged fill-order marker at the cursor and a clear insertion line between icons.
+
 - Settings control groups use two columns throughout. Who goes first fits its full rule labels, and preset profile icons align with their titles.
 - Drag fill-order markers to reorder them. Cancelled drags leave the active profile unchanged.
 - Drag the live preview close to settings to snap it alongside; drag away to detach.
