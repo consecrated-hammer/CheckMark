@@ -91,6 +91,11 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
         refresh(page, tab)
         local row = assert(rows(page, tab)[label], label)
         wow.Click(row.hcCheckbox or row)
+        if label:match("^Reset ") then
+            assert(HC.Dialog:IsShown(), label .. " asks for confirmation")
+            equal(HC.Dialog.current.title, label, "confirmation names its reset")
+            wow.Click(HC.Dialog.frame.accept)
+        end
     end
     local reminder = rows("Reminder", "When and how")
     local seconds = reminder["Seconds after joining"]
