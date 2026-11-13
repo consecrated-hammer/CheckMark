@@ -32,7 +32,7 @@ HC.Settings:NewPage({
     O.SetScope(panel, "shared")
     local flow = O.Flow(panel)
     local root = panel
-    panel = O.Section(root, 1)
+    panel = O.Section(root, 2)
     local heading
     heading, y = O.Header(panel, "Marker sound", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_2")
     local master
@@ -41,8 +41,8 @@ HC.Settings:NewPage({
         y, function() return ns.db.marker_sound_enabled ~= false end,
         function(value) ns.db.marker_sound_enabled = value end)
 
-    flow:Add(panel, -y + 4)
-    panel = O.Section(root, 1, master); y = -4
+    flow:Add(panel, -O.Flush(panel, y) + 4)
+    panel = O.Section(root, 2, master); y = -4
     _, y = O.MultiSelect(panel, "Available sounds",
         "Select the sounds available to both playback modes. At least one sound always remains selected.",
         y, { items = soundItems(), summary = selectedSummary,
@@ -55,8 +55,8 @@ HC.Settings:NewPage({
         function() return ns.db.marker_sound_mode == "SEQUENTIAL" and "SEQUENTIAL" or "RANDOM" end,
         function(value) ns.db.marker_sound_mode = value end)
 
-    flow:Add(panel, -y + 4, function() return ns.db.marker_sound_enabled ~= false end)
-    panel = O.Section(root, 1); y = -4
+    flow:Add(panel, -O.Flush(panel, y) + 4, function() return ns.db.marker_sound_enabled ~= false end)
+    panel = O.Section(root, 2); y = -4
     _, y = O.ActionButton(panel, y, "Test sound", function() if ns.playMarkerSound then ns.playMarkerSound(true) end end,
         "Previews from the selected pool using the current playback mode, even if marker sounds are disabled.", "primary")
 
@@ -65,6 +65,8 @@ HC.Settings:NewPage({
         "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
     local result = O.FontString(panel, "GameFontHighlightSmall", "muted")
     result:SetPoint("LEFT", check, "RIGHT", 12, 0)
+    result:SetWidth(O.CONTENT_WIDTH - check:GetWidth() - 24)
+    result:SetJustifyH("LEFT")
     HC.UI.OnRefresh(panel, function() result:SetText(ns.markerSoundCheckSummary()) end)
     result:SetText(ns.markerSoundCheckSummary())
 
@@ -76,6 +78,6 @@ HC.Settings:NewPage({
         ns.initializeMarkerSoundSettings()
         if ns.resetMarkerSoundSequence then ns.resetMarkerSoundSequence() end
     end, "Reset sounds")
-    flow:Add(panel, -y + 4)
+    flow:Add(panel, -O.Flush(panel, y) + 4)
     return flow:Layout()
 end)

@@ -192,6 +192,8 @@ local WHATS_NEW = {
 }
 
 HC:Init({
+    previewDock = true,
+    profileColumns = 2,
     name = "CheckMark",
     command = "checkmark",
     aliases = { "cm" },

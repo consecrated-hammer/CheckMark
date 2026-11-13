@@ -77,25 +77,27 @@ function ns.BuildGridPosition(panel)
     local _, legendY = O.ScopeLegend(legend, -4)
     flow:Add(legend, -legendY + 4)
     local function updateHandle() if ns.updateHandle then ns.updateHandle() end end
-    local frame = O.Section(panel, 1)
+    local frame = O.Section(panel, 2)
     local y = -8
     local master
     _, y = O.Header(frame, "Grid position", y)
     master, y = O.Check(frame, "Show drag handle", "Drag to move the grid; right-click for settings.", y,
         function() return db.show_handle ~= false end,
         function(value) db.show_handle = value; updateHandle() end)
-    flow:Add(frame, -y + 4)
-    local position = O.Section(panel, 1, master)
-    y = -4
+    local position = frame
     local values, labels = {}, {}
     for _, entry in ipairs(HANDLE_POSITIONS) do
         values[#values + 1], labels[#labels + 1] = entry.value, entry.label
     end
-    _, y = O.Dropdown(position, "Handle position", "Which edge of the grid holds the drag handle.", y, values, labels,
+    local handleRow
+    handleRow, y = O.Dropdown(position, "Handle position", "Which edge of the grid holds the drag handle.", y, values, labels,
         function() return db.handle_position end,
         function(value) db.handle_position = value; updateHandle() end)
-    flow:Add(position, -y + 4, function() return db.show_handle ~= false end)
-    local actions = O.Section(panel, 1)
+    handleRow.hcParentRow = master
+    local function showPosition() handleRow:SetShown(db.show_handle ~= false) end
+    O.OnRefresh(position, showPosition); showPosition()
+    flow:Add(position, -O.Flush(position, y) + 4)
+    local actions = O.Section(panel, 2)
     y = -4
     _, y = O.ActionButton(actions, y, "Re-centre grid", function() HC.Commands:Dispatch("reset position") end,
         "Move only the grid to the centre. Keeps the handle settings.")
@@ -104,6 +106,6 @@ function ns.BuildGridPosition(panel)
         HC.Commands:Dispatch("reset position")
         updateHandle()
     end, "Reset grid position")
-    flow:Add(actions, -y + 4)
+    flow:Add(actions, -O.Flush(actions, y) + 4)
     return flow:Layout()
 end

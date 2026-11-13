@@ -9,7 +9,7 @@ local function build(panel, window)
     O.SetScope(panel, "shared")
     local db, flow = ns.db, O.Flow(panel)
     local function section(fill, visible, parent)
-        local frame = O.Section(panel, 1, parent)
+        local frame = O.Section(panel, 2, parent)
         local bottom, result = fill(frame, -4)
         flow:Add(frame, -O.Flush(frame, bottom) + 4, visible)
         return result
@@ -19,16 +19,17 @@ local function build(panel, window)
             function(value) db[key] = value end)
     end
     local function timed(label, hint, key, sliderLabel, secondsKey, low, high, visible, parent)
-        local toggle = section(function(frame, y)
-            local row; row, y = check(frame, y, label, hint, key)
-            return y, row
-        end, visible, parent)
         section(function(frame, y)
-            _, y = O.Slider(frame, sliderLabel, "How long to wait, in seconds.", y, low, high, 1,
+            local toggle, slider
+            toggle, y = check(frame, y, label, hint, key)
+            slider, y = O.Slider(frame, sliderLabel, "How long to wait, in seconds.", y, low, high, 1,
                 function() return db[secondsKey] end, function(value) db[secondsKey] = value end,
                 function(value) return value .. " s" end)
+            slider.hcParentRow = toggle
+            local function render() slider:SetShown(db[key] == true) end
+            O.OnRefresh(frame, render); render()
             return y
-        end, function() return (not visible or visible()) and db[key] end, toggle)
+        end, visible, parent)
     end
     if window then
         local master = section(function(frame, y)
@@ -100,7 +101,7 @@ end
 HC.Settings:NewPage({ name = "Reminder", title = "Reminder", group = "main", profileScope = false,
     description = "Choose when to be reminded, how it appears and how the marking window behaves.",
     tabs = {
-        { name = "When and how", build = function(panel) return build(panel, false) end, columns = 1 },
-        { name = "Marking window", build = function(panel) return build(panel, true) end, columns = 1 },
+        { name = "When and how", build = function(panel) return build(panel, false) end, columns = 2 },
+        { name = "Marking window", build = function(panel) return build(panel, true) end, columns = 2 },
     },
 })

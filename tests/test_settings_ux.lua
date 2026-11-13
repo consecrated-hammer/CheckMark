@@ -1,5 +1,13 @@
 package.path = "./tests/hammercore/?.lua;" .. package.path
 local wow = require("wow")
+-- Estimate glyph advance only for deterministic geometry assertions. Native
+-- font rendering is still a client acceptance check.
+local makeRegion = wow.CreateRegion
+wow.CreateRegion = function(...)
+    local region = makeRegion(...)
+    region.GetStringWidth = function(self) return #(self:GetText() or "") * 7 end
+    return region
+end
 
 local function equal(actual, expected, label)
     if actual ~= expected then
@@ -150,8 +158,17 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     for _, label in ipairs({ "Compact", "Named", "Oversized" }) do
         local preset = rows("CheckMark", "Layout")[label]
         local _, textX = preset.Text:GetPoint()
-        local _, _, _, glyphX = preset.hcScopeMarker:GetPoint()
-        assert(glyphX + preset.hcScopeMarker:GetWidth() <= textX, label .. " reserves a clear glyph gutter")
+        local point, relative, relativePoint, glyphX, glyphY = preset.hcScopeMarker:GetPoint()
+        equal(textX, 32, "preset title reserves enlarged glyph gutter")
+        equal(point, "TOPLEFT", "glyph uses explicit top alignment")
+        equal(relative, preset, "glyph anchors to preset")
+        equal(relativePoint, "TOPLEFT", "glyph starts at title line top")
+        equal(glyphX, 4, "glyph has its own gutter")
+        equal(glyphY, -3, "glyph shares title line top")
+        equal(preset.Text:GetHeight(), 16, "title has one explicit icon-height line")
+        local titleRight = preset.Text.points[2]
+        equal(titleRight[1], "TOPRIGHT", "title right anchor stays on same line")
+        equal(titleRight[3], -7, "title right anchor has matching top offset")
         equal(preset:GetWidth(), math.floor((HC.UI.CONTENT_WIDTH - 12) / 3), "preset width remains unchanged")
     end
     local expectedOrders = {
@@ -170,6 +187,83 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
             "visible order follows " .. rule)
         assert(#short <= 64, "order stays concise; native text width still needs client acceptance")
     end
+    -- Reordering inserts at the target, and aborts never mutate a profile.
+    refresh("Markers", "Assignments")
+    local strip = rows("Markers", "Assignments")["Fill order"]
+    local icons, monitor = strip.dragIcons, strip.dragMonitor
+    local hover
+    local markCalls, setRaidTarget = 0, SetRaidTarget
+    SetRaidTarget = function() markCalls = markCalls + 1 end
+    assert(CheckMarkFillOrderDrag == monitor, "Escape resolves the real drag monitor")
+    local escapeRegistered = false
+    for _, name in ipairs(UISpecialFrames) do if name == "CheckMarkFillOrderDrag" then escapeRegistered = true end end
+    assert(escapeRegistered, "drag cancellation is registered with native Escape dismissal")
+    equal(ns.FillOrderDragMonitor, monitor, "drag monitor is cached across page builds")
+    for index, icon in ipairs(icons) do
+        icon.IsMouseOver = function() return hover == index end
+    end
+    local function orderText() return table.concat(db.fill_order, ",") end
+    db.fill_order = { 1, 2, 3, 4, 5, 6, 7, 8 }
+    local function start(index) icons[index].scripts.OnDragStart(icons[index]) end
+    local function stop(slot) hover = slot; icons[1].scripts.OnDragStop(icons[1]) end
+    start(1); stop(4)
+    equal(orderText(), "2,3,4,1,5,6,7,8", "drop inserts rather than swaps")
+    start(4); stop(1)
+    equal(orderText(), "1,2,3,4,5,6,7,8", "backward insertion retains all eight")
+    local unchanged = orderText()
+    local mouseDown = IsMouseButtonDown
+    IsMouseButtonDown = function() return true end
+    start(1); hover = 3; monitor.scripts.OnUpdate(monitor)
+    equal(icons[3].drop:IsShown(), true, "hovered destination highlights during drag")
+    monitor:Hide()
+    equal(icons[3].drop:IsShown(), false, "cancel clears destination feedback")
+    IsMouseButtonDown = mouseDown
+    start(1); stop(nil)
+    equal(orderText(), unchanged, "outside drop cancels")
+    start(1); monitor:Hide(); stop(4)
+    equal(orderText(), unchanged, "Escape dismiss frame cancels")
+    start(1); strip:Hide(); stop(4); strip:Show()
+    equal(orderText(), unchanged, "hidden row cancels")
+    start(1)
+    InCombatLockdown = function() return true end
+    stop(4)
+    equal(orderText(), unchanged, "combat transition cancels")
+    InCombatLockdown = function() return false end
+    start(1)
+    HC.Profiles:Switch("Dungeon", "manual")
+    local dungeonOrder = orderText()
+    stop(4)
+    equal(orderText(), dungeonOrder, "profile transition cancels")
+    HC.Profiles:Switch("World", "manual")
+    refresh("Markers", "Assignments")
+    local rule = rows("Markers", "Assignments")["Who goes first"]
+    local ruleButton
+    for _, frame in ipairs(wow.frames) do
+        if frame:GetParent() == rule and rawget(frame, "Text") then ruleButton = frame end
+    end
+    assert(ruleButton:GetWidth() > 200, "rule selector expands beyond old truncated width")
+    wow.Click(ruleButton)
+    for _, frame in ipairs(wow.frames) do
+        if frame.value and rawget(frame, "label") and frame.label.GetText then
+            local text = frame.label:GetText()
+            for _, spec in ipairs(ns.Assign.RULES) do
+                if text == spec.label then assert(frame:GetWidth() >= #text * 7 + 18, "menu fits full rule label") end
+            end
+        end
+    end
+    rule.hcCloseMenu()
+    equal(markCalls, 0, "dragging never applies a secure marker")
+    SetRaidTarget = setRaidTarget
+    -- Each control group uses two columns; full-width lists and the long
+    -- rule row remain deliberate exceptions.
+    for _, item in ipairs({ { "Markers", "Assignments", "Tank" },
+        { "Markers", "People", "Learn from my choices" },
+        { "Reminder", "When and how", "When I join a party" },
+        { "Reminder", "Marking window", "Window size" },
+        { "Sounds", nil, "Playback" }, { "CheckMark", "Position", "Handle position" } }) do
+        local row = rows(item[1], item[2])[item[3]]
+        equal(row:GetWidth(), math.floor((HC.UI.CONTENT_WIDTH - 1) / 2), item[3] .. " uses a half-width control cell")
+    end
     local reminder = rows("Reminder", "When and how")
     local seconds = reminder["Seconds after joining"]
     equal(HC.Settings:Focus("Reminder", "Seconds after joining", "When and how"), reminder["Remind me to mark"], "disabled reminder focuses master")
@@ -179,7 +273,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     local height = HC.Settings.pages.Reminder.bodies["When and how"].content:GetHeight()
     click("Reminder", "When and how", "Wait after joining")
     assert(seconds:GetParent():IsShown(), "joining slider appears")
-    assert(HC.Settings.pages.Reminder.bodies["When and how"].content:GetHeight() > height, "timing reflows page")
+    equal(HC.Settings.pages.Reminder.bodies["When and how"].content:GetHeight(), height, "timing slider fills its paired slot without a new row")
     assert(reminder["Seconds after combat"]:GetParent():IsShown(), "independent combat slider stays shown")
     db.remind_window = false; db.remind_timeout = false
     local window = rows("Reminder", "Marking window")
@@ -209,7 +303,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     end
     local _, _, testY = sounds["Test sound"]:GetPoint()
     local _, _, findY = sounds["Find missing sounds"]:GetPoint()
-    assert(testY > findY, "sound test comes before diagnosis")
+    assert(testY >= findY, "sound test comes before diagnosis, allowing a paired row")
 
     db.show_handle = false
     local position = rows("CheckMark", "Position")
@@ -283,6 +377,32 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
             end
         end
     end
+    -- Rebuilding the settings page must reuse its single Escape registration.
+    local markerSpec
+    for _, spec in ipairs(HC.Settings.order) do if spec.name == "Markers" then markerSpec = spec end end
+    local cached = ns.FillOrderDragMonitor
+    local createRegion = wow.CreateRegion
+    wow.CreateRegion = function(...)
+        local region = createRegion(...)
+        region.GetStringWidth = function() return 0 end
+        return region
+    end
+    for _ = 1, 2 do
+        local scratch = CreateFrame("Frame", nil, UIParent)
+        scratch.hcRefresh, scratch.hcRefreshAll, scratch.hcColumns = {}, function() end, 2
+        markerSpec.tabs[1].build(scratch, -8)
+        equal(ns.FillOrderDragMonitor, cached, "rebuilding reuses the drag monitor")
+        local rule = scratch.hcRows["Who goes first"]
+        for _, frame in ipairs(wow.frames) do
+            if frame:GetParent() == rule and rawget(frame, "Text") then
+                assert(frame:GetWidth() > 200, "unready font metrics use a readable width fallback")
+            end
+        end
+    end
+    wow.CreateRegion = createRegion
+    local registrations = 0
+    for _, name in ipairs(UISpecialFrames) do if name == "CheckMarkFillOrderDrag" then registrations = registrations + 1 end end
+    equal(registrations, 1, "rebuilding does not accumulate Escape targets")
     equal(next(HC.Settings.errors), nil, "all pages and tabs construct")
 end
 io.write("settings UX tests passed on Retail and Forever at 0.7 and 1.3 scales\n")

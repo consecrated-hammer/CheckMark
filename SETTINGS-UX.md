@@ -132,3 +132,19 @@ shared. Search labels and the saved profile keys are unchanged.
 Reset grid visibility is a mixed-scope action: it restores profile show rules
 and clears the shared manual Hide grid toggle. It stays unmarked and its
 tooltip names both effects. Preset cards reserve a separate glyph gutter.
+
+## Live feedback follow-up
+
+Control groups use two columns across the settings pages. The People manager,
+assignment explanation and long Who goes first selector keep full-width rows.
+The selector measures its labels and reserves room for the title and arrow.
+Fill order uses drag and drop: dropping inserts a marker at the target slot.
+Outside drops, Escape, hiding the page, combat and profile changes cancel the
+drag without changing assignments. No drag action applies a raid marker.
+Preset profile glyphs align with the title and reserve a 24-pixel inset.
+
+Live preview snaps to a settings edge when dragged close, and detaches when
+dragged away. It opens freely until snapped; the shared Visibility preference
+controls snapping. Quest Complete is excluded from Forever's sound catalogue
+after its native diagnostic reported kit 878 unavailable; Retail retains it.
+Automated checks cannot establish native rendering or audible playback.

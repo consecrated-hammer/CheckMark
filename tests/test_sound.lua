@@ -68,9 +68,40 @@ C_AddOns = { GetAddOnMetadata = function(_, key) return key == "X-CheckMark-Targ
 local forever = { db = { marker_sound_enabled = true } }
 assert(loadfile("Sound.lua"))("CheckMark", forever)
 forever.initializeMarkerSoundSettings()
-equal(#forever.MARKER_SOUNDS, 12, "Forever sees shared sounds only")
+equal(#forever.MARKER_SOUNDS, 11, "Forever sees shared sounds only")
 for _, sound in ipairs(forever.MARKER_SOUNDS) do
     equal(sound.only, nil, "no Retail-only sound on Forever: " .. sound.name)
 end
 C_AddOns = nil
 print("CheckMark sound catalogue tests passed")
+
+-- Quest Complete kit 878 fails the live Forever diagnostic. Keep it on
+-- Retail, exclude it from Forever choices and fall back without losing prefs.
+forever.db.marker_sound_ids = { [878] = true, [888] = true }
+forever.initializeMarkerSoundSettings()
+equal(forever.db.marker_sound_ids[878], true, "unsupported saved selection is preserved")
+equal(#forever.getSelectedMarkerSounds(), 1, "existing supported selection survives")
+equal(forever.getSelectedMarkerSounds()[1].id, 888, "Forever retains Level Up")
+forever.db.marker_sound_ids = { [878] = true }
+assert(#forever.getSelectedMarkerSounds() > 0, "unsupported-only selection falls back")
+local checked878 = false
+PlaySound = function(id) if id == 878 then checked878 = true; return false end; return true end
+local missing = forever.checkMarkerSounds()
+equal(#missing, 0, "Forever checks its supported catalogue")
+equal(checked878, false, "Forever never offers or probes unsupported Quest Complete")
+ns.db.marker_sound_ids = { [878] = true }
+PlaySound = function() return true end
+equal(ns.getSelectedMarkerSounds()[1].id, 878, "Retail retains Quest Complete selection")
+equal(#ns.checkMarkerSounds(), 0, "Retail available Quest Complete remains supported")
+
+forever.db.marker_sound_ids = { [878] = true }
+forever.db.marker_sound_mode = "SEQUENTIAL"
+forever.db.marker_sound_enabled = false
+local savedPool = forever.db.marker_sound_ids
+forever.initializeMarkerSoundSettings()
+equal(forever.db.marker_sound_ids, savedPool, "unsupported-only saved pool survives initialization")
+equal(forever.db.marker_sound_ids[878], true, "unsupported-only Quest Complete choice is retained")
+equal(forever.db.marker_sound_ids[888], nil, "initialization does not silently select other sounds")
+equal(forever.db.marker_sound_mode, "SEQUENTIAL", "existing playback preference survives")
+equal(forever.db.marker_sound_enabled, false, "existing enabled preference survives")
+assert(#forever.getSelectedMarkerSounds() > 0, "retained unsupported-only preference uses playback fallback")

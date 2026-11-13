@@ -54,12 +54,14 @@ function Preview:Create()
     T.Fill(bar:CreateTexture(nil, "BACKGROUND"), "header"):SetAllPoints()
     bar:EnableMouse(true)
     bar:RegisterForDrag("LeftButton")
-    bar:SetScript("OnDragStart", function() win:StartMoving() end)
-    bar:SetScript("OnDragStop", function()
-        win:StopMovingOrSizing()
-        local from, _, to, x, y = win:GetPoint()
-        ns.db.preview_window_point = { from, to, x, y }
-    end)
+    local dock = HC.Settings:PreviewDock(win, {
+        getPoint = function() return ns.db.preview_window_point end,
+        setPoint = function(value) ns.db.preview_window_point = value end,
+        canDrag = function() return not InCombatLockdown() end,
+    })
+    self.dock = dock
+    bar:SetScript("OnDragStart", function() dock:BeginDrag() end)
+    bar:SetScript("OnDragStop", function() dock:EndDrag() end)
     local title = T.Font(UI.FontString(bar, "GameFontNormalLarge", "text"), 16)
     title:SetPoint("LEFT", WINDOW_PAD, 0)
     title:SetText("Live preview")
@@ -163,6 +165,7 @@ end
 function Preview:Show()
     self:Create()
     self.window:Show()
+    self.dock:Restore()
     self:ApplyLayer()
     self:Refresh()
     local HC = ns.HammerCore
@@ -237,6 +240,7 @@ function Preview:Refresh()
     parts.grid:ClearAllPoints()
     parts.grid:SetPoint("CENTER", parts.viewport, "CENTER", 0, 0)
     self.window:SetSize(innerWidth + WINDOW_PAD * 2, WINDOW_HEADER + WINDOW_CONTROLS + 22 + innerHeight + WINDOW_PAD)
+    self.dock:Refresh()
     parts.note:SetText(fit < 1 and ("Scaled to %d%% to fit your screen."):format(math.floor(fit * 100 + 0.5))
         or ("Actual size, %d members. Markers follow the Markers page and the %s profile."):format(count,
             ns.HammerCore.Profiles:Active() or "active"))

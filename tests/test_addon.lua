@@ -78,6 +78,9 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(HC.Settings.headerAction:GetText(), "Show live preview", toc .. ": Panel offers the live preview")
     wow.Click(HC.Settings.headerAction)
     equal(ns.Preview:IsShown(), true, toc .. ": the header opens the preview")
+    equal(ns.Preview.dock:IsAttached(), false, toc .. ": opening preview does not auto-attach")
+    equal(HC.spec.previewDock, true, toc .. ": snapping preference is advertised")
+    equal(HC.spec.profileColumns, 2, toc .. ": profile control groups request two columns")
     equal(HC.Settings.headerAction:GetText(), "Hide live preview", toc .. ": the header button follows it")
     equal(ns.Preview.parts.cells[1]:IsShown(), true, toc .. ": the preview draws sample cells")
     ns.db.preview_members = 3; ns.Preview:Refresh()
@@ -119,7 +122,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     -- The sound check finds kits this client lacks and playback skips them.
     PlaySound = function(id) return id ~= 878 and id ~= 880, 1 end
     SlashCmdList.CHECKMARK("sounds")
-    equal(wow.LastPrint(), "CheckMark: 2 missing: Quest Complete, Party Invite",
+    equal(wow.LastPrint(), toc:find("Camelot") and "CheckMark: 1 missing: Party Invite" or "CheckMark: 2 missing: Quest Complete, Party Invite",
         toc .. ": the sound check names missing sounds")
     for _, sound in ipairs(ns.getSelectedMarkerSounds()) do
         equal(sound.id ~= 878 and sound.id ~= 880, true, toc .. ": missing sounds are not played")

@@ -102,46 +102,87 @@ local function markerSelect(row, width, get, set, note, none)
     return button, render, function() if menu then menu:Hide() end end
 end
 
--- Fill order: eight icons. Click moves one earlier, right-click later.
+-- Dragging changes only the saved plan, and commits once at a valid slot.
 local function fillStrip(panel, y)
-    local db = ns.db
     local row = O.Row(panel, y, 40, "Fill order",
-        "Everyone the rules above don't cover gets the first free marker, left to right. Click an icon to move it earlier, right-click to move it later.")
-    local icons = {}
+        "Drag a marker to a new slot. Drop inserts it there; the other markers move along.")
+    local icons, drag = {}, nil
+    -- One Escape target survives page reconstruction. Hiding it cancels any
+    -- previous owner before the new strip installs its scripts.
+    local monitor = ns.FillOrderDragMonitor
+    if not monitor then
+        monitor = CreateFrame("Frame", "CheckMarkFillOrderDrag", UIParent)
+        ns.FillOrderDragMonitor = monitor
+        UISpecialFrames = UISpecialFrames or {}
+        table.insert(UISpecialFrames, "CheckMarkFillOrderDrag")
+    end
+    monitor:Hide()
+    monitor.hcDragOwner = row
     local function render()
-        db.fill_order = ns.Assign.FillOrder(db.fill_order)
-        for index, marker in ipairs(db.fill_order) do
+        local order = ns.Assign.FillOrder(ns.db.fill_order)
+        for index, marker in ipairs(order) do
             icons[index].marker = marker
             icons[index].tex:SetTexture(ns.MARKER_TEXTURES[marker])
         end
     end
-    local function move(index, by)
-        local order = ns.Assign.FillOrder(db.fill_order)
-        local target = index + by
-        if target < 1 or target > #order then return end
-        order[index], order[target] = order[target], order[index]
-        db.fill_order = order
-        render()
-        changed()
+    local function target()
+        for index, button in ipairs(icons) do if button:IsMouseOver() then return index end end
     end
+    local function valid()
+        return drag and ns.db == drag.db and ns.db.fill_order == drag.order
+            and HC.Profiles:Active() == drag.profile and row:IsShown()
+            and not InCombatLockdown()
+    end
+    local function cancel()
+        drag = nil
+        if monitor.hcDragOwner == row then monitor:Hide() end
+        for _, button in ipairs(icons) do button:SetAlpha(1); button.drop:Hide() end
+    end
+    local function finish()
+        local slot = target()
+        if valid() and slot and slot ~= drag.index then
+            local order = ns.Assign.FillOrder(drag.order)
+            local marker = table.remove(order, drag.index)
+            table.insert(order, slot, marker)
+            ns.db.fill_order = order
+            cancel(); render(); changed()
+        else cancel() end
+    end
+    monitor:SetScript("OnHide", cancel)
+    monitor:SetScript("OnUpdate", function()
+        if not valid() then cancel(); return end
+        local slot = target()
+        for index, button in ipairs(icons) do button.drop:SetShown(index == slot) end
+        if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then finish() end
+    end)
     for index = 1, 8 do
         local button = CreateFrame("Button", nil, row)
         button:SetSize(24, 24)
         button:SetPoint("RIGHT", row, "RIGHT", -O.CELL_INSET - (8 - index) * 28, 0)
         button.tex = button:CreateTexture(nil, "ARTWORK")
         button.tex:SetAllPoints()
-        button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-        button:SetScript("OnClick", function(_, mouse) move(index, mouse == "RightButton" and 1 or -1) end)
+        button.drop = button:CreateTexture(nil, "OVERLAY")
+        button.drop:SetAllPoints(); button.drop:SetColorTexture(1, 0.82, 0.2, 0.45); button.drop:Hide()
+        button:RegisterForDrag("LeftButton")
+        button:SetScript("OnDragStart", function()
+            cancel()
+            if InCombatLockdown() then return end
+            drag = { index = index, db = ns.db, order = ns.db.fill_order, profile = HC.Profiles:Active() }
+            button:SetAlpha(0.4); GameTooltip:Hide(); monitor:Show()
+        end)
+        button:SetScript("OnDragStop", finish)
         button:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
             GameTooltip:SetText(index .. ". " .. markerName(self.marker))
-            GameTooltip:AddLine("Click: earlier. Right-click: later.", 0.85, 0.85, 0.85)
+            GameTooltip:AddLine("Drag to a new slot.", 0.85, 0.85, 0.85)
             GameTooltip:Show()
         end)
         button:SetScript("OnLeave", function() GameTooltip:Hide() end)
         icons[index] = button
     end
-    O.OnRefresh(panel, render)
+    row:HookScript("OnHide", cancel)
+    row.dragIcons, row.dragMonitor = icons, monitor
+    O.OnRefresh(panel, function() cancel(); render() end)
     render()
     return row, row.hcNextY
 end
@@ -213,9 +254,18 @@ local function assignments(panel, y)
     _, y = O.Header(panel, "Who goes first", y, ICONS.rules)
     local values, labels = {}, {}
     for index, rule in ipairs(ns.Assign.RULES) do values[index], labels[index] = rule.value, rule.label end
-    _, y = O.Dropdown(panel, "Who goes first", "Decides who gets their marker first when two choices clash.",
+    y = O.Columns(panel, 1, y)
+    local ruleRow, ruleButton
+    ruleRow, y, ruleButton = O.Dropdown(panel, "Who goes first", "Decides who gets their marker first when two choices clash.",
         y, values, labels, function() return db.marker_rules end,
-        function(value) db.marker_rules = value; changed() end, nil, nil, 200)
+        function(value) db.marker_rules = value; changed() end)
+    -- Measure with the actual control font, preserving title and arrow room.
+    local measure = ruleButton:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    local widest = 0
+    for _, label in ipairs(labels) do measure:SetText(label); widest = math.max(widest, (measure:GetStringWidth() or 0) > 0 and measure:GetStringWidth() or #label * 8) end
+    measure:Hide()
+    ruleButton:SetWidth(math.min(widest + 48,
+        ruleRow.hcWidth - ((ruleRow.Title:GetStringWidth() or 0) > 0 and ruleRow.Title:GetStringWidth() or 110) - O.CELL_INSET * 2 - 36))
     local where
     where, y = O.Text(panel, "", y)
     -- The sentence mirrors Assign.Plan; it describes the rule without
@@ -239,6 +289,7 @@ local function assignments(panel, y)
             :gsub("learned people", "learned"):gsub(", ", " > "))
     end)
 
+    y = O.Columns(panel, 2, y)
     _, y = O.Header(panel, "Role markers", y, ICONS.roles)
     for _, slot in ipairs(ns.ROLE_SLOTS) do
         local row = O.Row(panel, y, 34, ns.ROLE_SLOT_LABELS[slot], "The marker for the party's " .. ns.ROLE_SLOT_LABELS[slot]:lower() .. ".")
@@ -255,9 +306,10 @@ local function assignments(panel, y)
     end
 
     _, y = O.Text(panel, "Each marker is used once. If two people want the same one, the earlier rule wins and the other takes the next free marker.", y)
+    y = O.Columns(panel, 1, y)
     _, y = O.Header(panel, "Fill order", y, ICONS.fill)
     _, y = fillStrip(panel, y)
-    _, y = O.Text(panel, "First to last. Click moves a marker earlier, right-click later.", y)
+    _, y = O.Text(panel, "First to last. Drag a marker onto its new slot; the others move along.", y)
 
     _, y = O.PageReset(panel, y, function()
         db.role_template = { TANK = ns.Assign.ROLE_DEFAULT.TANK, HEALER = ns.Assign.ROLE_DEFAULT.HEALER }
@@ -285,7 +337,7 @@ local function regulars(panel, y)
     note:SetJustifyH("LEFT")
     local controls = CreateFrame("Frame", nil, panel)
     controls:SetSize(O.CONTENT_WIDTH + O.PAD * 2, 1)
-    controls.hcColumns = 1
+    controls.hcColumns = 2
     controls.hcRefresh = panel.hcRefresh
     controls.hcRefreshAll = panel.hcRefreshAll
     controls.hcHeaderOwner = panel.hcHeaderOwner or panel
@@ -354,7 +406,7 @@ local function regulars(panel, y)
     end, "Remove all unpinned learned people from every profile. Pinned people and this party's current picks stay. Learning remains enabled and may learn them again.", "danger")
 
 
-    local controlsBottom, pageBottom = y
+    local controlsBottom, pageBottom = O.Flush(controls, y)
     controls:SetHeight(-controlsBottom + 4)
     listTop = listTop + controlsBottom - 8
     list:ClearAllPoints()
@@ -408,6 +460,6 @@ HC.Settings:NewPage({
     profileScope = function(tab) return tab == "Assignments" end,
     tabs = {
         { name = "Assignments", build = assignments },
-        { name = "People", build = regulars, columns = 1 },
+        { name = "People", build = regulars, columns = 2 },
     },
 })

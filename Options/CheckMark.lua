@@ -22,7 +22,7 @@ HC.Settings:NewPage({ name = "CheckMark", title = "Grid", group = "main", descri
         local presetWidth = math.floor((O.CONTENT_WIDTH - 12) / 3)
         local button = O.Button(presets, presetWidth, 58)
         button:SetPoint("TOPLEFT", O.PAD + (i - 1) * (presetWidth + 6), presetY - 4); button:SetText(spec[1])
-        button.Text:ClearAllPoints(); button.Text:SetPoint("TOPLEFT", 20, -7); button.Text:SetPoint("RIGHT", -10, 0); button.Text:SetJustifyH("LEFT")
+        button.Text:ClearAllPoints(); button.Text:SetPoint("TOPLEFT", O.PROFILE_INSET, -7); button.Text:SetPoint("TOPRIGHT", -10, -7); button.Text:SetHeight(16); button.Text:SetWordWrap(false); button.Text:SetJustifyH("LEFT")
         local note = button:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
         note:SetPoint("TOPLEFT", button.Text, "BOTTOMLEFT", 0, -2); note:SetText(spec[2]); note:SetTextColor(T.Unpack("muted")); note:SetJustifyH("LEFT")
         button:SetScript("OnClick", function() db.cell_width, db.cell_height, db.icon_size, db.cell_columns, db.cell_spacing, db.show_cell_names = spec[3], spec[4], spec[5], spec[6], spec[7], spec[8]; refreshGrid(); presets.hcRefreshAll() end)
@@ -30,7 +30,7 @@ HC.Settings:NewPage({ name = "CheckMark", title = "Grid", group = "main", descri
         O.RegisterRow(presets, button, spec[1])
         -- Preset cards have custom text insets, so reserve their own gutter.
         button.hcScopeMarker:ClearAllPoints()
-        button.hcScopeMarker:SetPoint("LEFT", button, "LEFT", 4, 0)
+        button.hcScopeMarker:SetPoint("TOPLEFT", button, "TOPLEFT", 4, -(7 + (16 - O.PROFILE_GLYPH_SIZE) / 2))
     end
     local presetsHeight = -presetY + 70
     local grid = section(panel, 2); local gy = -8; _, gy = O.Header(grid, "Grid", gy, ICONS.grid)

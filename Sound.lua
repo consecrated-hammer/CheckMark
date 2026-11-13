@@ -10,7 +10,7 @@ local CATALOGUE = {
     { id = 11965, name = "A Horseman Laugh", only = "retail" },
     { id = 888, name = "Level Up" },
     { id = 618, name = "Quest Added" },
-    { id = 878, name = "Quest Complete" },
+    { id = 878, name = "Quest Complete", only = "retail" },
     { id = 12891, name = "Achievement Gained", only = "retail" },
     { id = 13833, name = "Achievement Menu Close" },
     { id = 17318, name = "Dungeon Ready", only = "retail" },
@@ -82,7 +82,11 @@ function ns.initializeMarkerSoundSettings()
     for _, sound in ipairs(ns.MARKER_SOUNDS) do
         if db.marker_sound_ids[sound.id] then hasSelected = true; break end
     end
-    if not hasSelected then db.marker_sound_ids = allSoundIDs() end
+    -- Keep deliberate saved choices even when this client's catalogue no
+    -- longer offers them. Playback already falls back to its playable pool.
+    if not hasSelected and next(db.marker_sound_ids) == nil then
+        db.marker_sound_ids = allSoundIDs()
+    end
 end
 
 -- Forever's sound library is not Retail's.  A sound kit the client lacks

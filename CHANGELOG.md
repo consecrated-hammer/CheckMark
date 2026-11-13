@@ -4,6 +4,11 @@
 
 ### Changed
 
+- Settings control groups use two columns throughout. Who goes first fits its full rule labels, and preset profile icons align with their titles.
+- Drag fill-order markers to reorder them. Cancelled drags leave the active profile unchanged.
+- Drag the live preview close to settings to snap it alongside; drag away to detach.
+- Quest Complete stays available on Retail and is excluded from Forever, where its sound kit is unavailable.
+
 - A small profile icon marks settings saved in the active profile, with one legend per page or tab. Repeated scope headings are gone.
 - Markers shows the rule order in plain words. Learning and Add controls stay above the People list, and Forget learned asks before removing anyone.
 - Playback uses one dropdown; Test sound comes before Find missing sounds.

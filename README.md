@@ -29,7 +29,7 @@ CheckMark puts a raid marker on each party member so you can spot them at a glan
 
 ## Getting started
 
-Install, then type `/checkmark` (or `/cm`) for settings. On **Markers**, **Assignments** sets who goes first, the role markers and fill order. **People** holds your pinned and learned people, friend/party pickers and learning settings. **Mark the party** on Assignments opens the marking window (a sample party while solo). **Test reminder** on Reminder > When and how shows the marking window with a sample party.
+Install, then type `/checkmark` (or `/cm`) for settings. On **Markers**, **Assignments** sets who goes first, the role markers and fill order. Drag the eight fill-order icons to reorder them; a drop inserts the marker at that slot. **People** holds your pinned and learned people, friend/party pickers and learning settings. **Mark the party** on Assignments opens the marking window (a sample party while solo). **Test reminder** on Reminder > When and how shows the marking window with a sample party.
 
 Right-click the minimap button for a menu: settings, profiles, **Mark the party** (opens the marking window, or previews it when you're solo), **Show grid** and **Mark reminder**. Prefer right-click to open settings? Change **Minimap right-click** on Visibility. Lost a setting? The search box at the top of settings finds it.
 
@@ -43,6 +43,8 @@ In a party, `/checkmark toggle` or **Show grid** on the minimap menu shows the g
 - **Sounds:** marker sounds, selected pool and playback mode, with Find missing sounds and Test sound always available.
 - **Visibility:** grid show rules, then shared minimap, update and settings-window choices.
 - **Profiles:** World, Delve and Dungeon, automatic switching, and profile management.
+
+Drag the live preview near an edge of settings to snap it alongside. Drag away to detach it; **Snap preview to settings** on Visibility controls this.
 
 A small profile icon marks settings saved in the active profile. The legend appears
 once on each affected page or tab; unmarked preferences are shared. The active profile
