@@ -11,6 +11,7 @@ ignore:
   - .pkgmeta
   - .gitignore
   - .scratch
+  - SETTINGS-UX.md
   - DEVELOPMENT.md
   - tools
   - Art

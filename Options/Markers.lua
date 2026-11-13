@@ -12,7 +12,6 @@ local ICONS = {
     regulars = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6",
     learning = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_5",
 }
-local MAX_LISTED = 20
 
 local function markerName(marker) return ns.MARKER_NAMES[marker] or "None" end
 
@@ -98,6 +97,7 @@ local function markerSelect(row, width, get, set, note, none)
         end
         menu:ClearAllPoints(); menu:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -5); menu:Show()
     end)
+    row:HookScript("OnHide", function() if menu then menu:Hide() end end)
     render()
     return button, render, function() if menu then menu:Hide() end end
 end
@@ -204,10 +204,13 @@ end
 local function assignments(panel, y)
     local db = ns.db
 
+    _, y = O.ActionButton(panel, y, "Mark the party", function()
+        if ns.isEligibleGroup() then ns.MarkWindow:Open() else ns.MarkWindow:Test() end
+    end, "Open the marking window. Click each member to mark them; solo opens a sample party. Unavailable in combat.", "primary")
     _, y = O.Header(panel, "Who goes first", y, ICONS.rules)
     local values, labels = {}, {}
     for index, rule in ipairs(ns.Assign.RULES) do values[index], labels[index] = rule.value, rule.label end
-    _, y = O.Dropdown(panel, "Who goes first", "Regulars are people you've pinned or CheckMark has learned. Roles are the tank and healer markers. The fill order covers everyone else.",
+    _, y = O.Dropdown(panel, "Who goes first", "Pinned regulars and roles compete in the chosen order. Learned assignments follow both when Regulars is included. This party's manual picks come first; the fill order comes last.",
         y, values, labels, function() return db.marker_rules end,
         function(value) db.marker_rules = value; changed() end, nil, nil, 200)
     local where
@@ -216,7 +219,7 @@ local function assignments(panel, y)
         where:SetText("Saved in the " .. tostring(HC.Profiles:Active() or "active") .. " profile, with the role markers and fill order.")
     end)
 
-    _, y = O.Header(panel, "Role markers", y, ICONS.roles)
+    _, y = O.Header(panel, "Role markers (per profile)", y, ICONS.roles)
     for _, slot in ipairs(ns.ROLE_SLOTS) do
         local row = O.Row(panel, y, 34, ns.ROLE_SLOT_LABELS[slot], "The marker for the party's " .. ns.ROLE_SLOT_LABELS[slot]:lower() .. ".")
         local _, render = markerSelect(row, 140, function() return db.role_template[slot] or 0 end, function(marker)
@@ -231,30 +234,29 @@ local function assignments(panel, y)
         y = row.hcNextY
     end
 
+    _, y = O.Text(panel, "Each marker is used once. If two choices request it, the earlier assignment keeps it; the other gets the next available choice. This is the plan, not confirmed game state.", y)
     _, y = O.Header(panel, "Fill order", y, ICONS.fill)
     _, y = fillStrip(panel, y)
 
     _, y = O.PageReset(panel, y, function()
         db.role_template = { TANK = ns.Assign.ROLE_DEFAULT.TANK, HEALER = ns.Assign.ROLE_DEFAULT.HEALER }
         db.fill_order = ns.Assign.FillOrder(nil)
+        db.marker_rules = ns.DEFAULT_DB.marker_rules
         changed()
-    end, "Reset markers")
+    end, "Reset assignments")
     return y
 end
 
 local function regulars(panel, y)
     local db = ns.db
-    _, y = O.Header(panel, "Regulars", y, ICONS.regulars)
+    _, y = O.Header(panel, "People (shared)", y, ICONS.regulars)
+    _, y = O.Text(panel, "Pinned people keep your chosen marker. Learned people remember CheckMark clicks. Both are shared by every profile; assignment rules decide when they apply.", y)
     local list = CreateFrame("Frame", nil, panel)
     list:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y)
     list:SetSize(O.CONTENT_WIDTH + O.PAD * 2, 1)
     list.hcColumns = 1
     list.hcHeaderOwner = panel.hcHeaderOwner or panel
     local rows, bottoms, listY = {}, {}, 0
-    for index = 1, MAX_LISTED do
-        rows[index], listY = regularRow(list, listY, { label = "", marker = 1 })
-        bottoms[index] = listY
-    end
     panel.regularRows = rows
     local note = O.FontString(list, "GameFontHighlightSmall", "muted")
     note:SetWidth(O.CONTENT_WIDTH)
@@ -312,11 +314,11 @@ local function regulars(panel, y)
     _, y = O.ActionButton(controls, y, "Forget learned", function()
         ns.Assign.ForgetLearned()
         rebuild()
-    end, "Forget every learned marker. Pinned regulars stay.")
+    end, "Remove all unpinned learned people from every profile. Pinned people and this party's current picks stay. Learning remains enabled and may learn them again.")
 
-    _, y = O.Header(controls, "Learning", y, ICONS.learning)
+    _, y = O.Header(controls, "Learning and party sharing (shared)", y, ICONS.learning)
     for _, spec in ipairs({
-        { "Learn from my choices", "Remember the marker you give someone, so they get it next time.", "learn_mine" },
+        { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when Regulars is included.", "learn_mine" },
         { "Share with the party", "Tell party members running CheckMark who you marked with what.", "share_party" },
         { "Learn from the party", "Learn from what party members running CheckMark mark.", "learn_party" },
     }) do
@@ -329,11 +331,27 @@ local function regulars(panel, y)
     controls:SetHeight(-controlsBottom + 4)
     local function refreshRegulars()
         local items = ns.Assign.List()
-        local count = math.min(#items, MAX_LISTED)
+        local count = #items
+        -- Remove the old index before reusing rows, including reordered names.
+        for _, row in ipairs(rows) do
+            local owner = list.hcHeaderOwner
+            if row.searchLabel and owner.hcRows[row.searchLabel] == row then owner.hcRows[row.searchLabel] = nil end
+            row.searchLabel = nil
+        end
+        while #rows < count do
+            local index = #rows + 1
+            rows[index], listY = regularRow(list, listY, { label = "", marker = 1 })
+            bottoms[index] = listY
+        end
+        local labels = {}
+        for _, item in ipairs(items) do labels[item.label] = (labels[item.label] or 0) + 1 end
+        for _, item in ipairs(items) do
+            if labels[item.label] > 1 then item.label = item.label .. " (" .. item.key .. ")" end
+        end
         for index, row in ipairs(rows) do row:SetItem(index <= count and items[index] or nil) end
         local bottom = count > 0 and bottoms[count] or 0
         local message = #items == 0 and "Nobody yet. Pin someone from the marking window, or add a friend below."
-            or (#items > MAX_LISTED and ("And %d more."):format(#items - MAX_LISTED) or nil)
+            or nil
         note:SetShown(message ~= nil)
         if message then
             note:SetText(message)
@@ -347,6 +365,7 @@ local function regulars(panel, y)
         pageBottom = listTop + bottom - 8 + controlsBottom
         if panel.hcSetBottom then panel.hcSetBottom(pageBottom) end
     end
+    ns.RefreshRegularsSearch = refreshRegulars
     O.OnRefresh(panel, refreshRegulars)
     refreshRegulars()
     return pageBottom
@@ -358,6 +377,7 @@ HC.Settings:NewPage({
     group = "main",
     description = "Who gets which marker.",
     headerAction = ns.LivePreviewAction,
+    profileScope = function(tab) return tab == "Assignments" end,
     tabs = {
         { name = "Assignments", build = assignments },
         { name = "Regulars", build = regulars, columns = 1 },

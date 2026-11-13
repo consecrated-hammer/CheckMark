@@ -1,17 +1,31 @@
 # Development workflow
 
-Develop only from this Git clone. Do not edit the Syncthing copy under
-`MyAddons`: it is a deployment handoff, never a Git worktree.
+Develop from this Git clone. Syncthing folders are client deployment targets.
 
-Run the repository tests first. Then make a runtime-only staging folder, using
-the one TOC intended for that client:
+Run Lua 5.1 syntax and every `tests/test_*.lua` suite, then HammerCore's
+`tools/check.py`, `tools/toc_check.py` and `tools/whatsnew_check.py` against this
+clone. `tests/test_settings_ux.lua` checks both clients, search registration,
+dependent controls, reset isolation and settings construction at 0.7 and 1.3.
+The tests run in lint and release CI through the existing `test_*.lua` glob.
+
+For authorised development staging, archive the existing client folders for
+rollback, then run from this clone:
 
 ```sh
-python3 tools/stage_addon.py --toc CheckMark.toc --addon-name CheckMark --output /mnt/backup/syncthing/kevin/myaddons/_staging
+python3 ../HammerCore/tools/stage.py . --client both
 ```
 
-For the provisional Camelot preview, substitute `CheckMark_Camelot.toc` once
-it has been brought into this clone. Syncthing delivers `_staging/CheckMark`
-to the Windows PC; from there, use the explicit installer/copy step for the
-intended WoW client and `/reload`. Confirm the loaded version in-game. Do not
-tag, push, or publish local builds.
+The current tool selects a fresh `-devN`, copies runtime files and both TOCs,
+and stamps only the selected client's TOC. Confirm its current targets before
+running: Retail `wow-interface/AddOns`, Forever `wow-forever-interface/AddOns`,
+both under `/mnt/backup/syncthing/kevin/`. Preserve the separate WTF tree.
+Compare staged runtime files to tested source, allowing only that TOC stamp.
+Check Syncthing delivery separately from local staging. Kevin must `/reload`
+and run `/checkmark version` on each client to confirm the loaded build.
+
+To roll back runtime, restore the archived folder to a temporary source with
+`stage.py` and stage a fresh development version. Keep both TOCs and verify the
+result. Runtime rollback does not undo settings changed while testing.
+
+Development staging does not publish to CurseForge. Release commits must reach
+remote main before a release tag; follow the shared addon instructions.

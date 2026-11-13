@@ -64,7 +64,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     local names = {}
     for _, spec in ipairs(HC.Settings.order) do names[#names + 1] = spec.name end
     equal(table.concat(names, ","),
-        "CheckMark,Markers,Profiles,Reminder,Sounds,Visibility,What's new,Commands,Troubleshooting,About", toc .. ": rail order")
+        "CheckMark,Markers,Reminder,Sounds,Visibility,Profiles,What's new,Commands,Troubleshooting,About", toc .. ": rail order")
     local failures = {}
     for name, err in pairs(HC.Settings.errors) do failures[#failures + 1] = name .. ": " .. err end
     equal(table.concat(failures, "; "), "", toc .. ": every settings page builds")

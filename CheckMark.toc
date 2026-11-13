@@ -29,7 +29,7 @@ MarkWindow.lua
 Preview.lua
 Options\CheckMark.lua
 Options\Markers.lua
-Options\Profiles.lua
 Options\Reminder.lua
 Options\Sounds.lua
 Options\Visibility.lua
+Options\Profiles.lua

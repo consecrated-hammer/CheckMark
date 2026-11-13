@@ -19,7 +19,7 @@ CheckMark puts a raid marker on each party member so you can spot them at a glan
 - **Mark party window.** When your party forms or someone joins, a window shows a big card for each member with their marker. Click a card to mark them, right-click to clear, click the icon to pick another marker, or pin them. It waits a couple of seconds after people join and a few after combat, so you can loot first.
 - **Markers follow people.** Pin someone to a marker and they keep it whatever the party order or leader. Battle.net friends are matched by BattleTag, so they keep it on every character.
 - **It learns.** CheckMark remembers the markers you give people. Party members running CheckMark share who they marked with what, so a regular crew stays consistent.
-- **Who goes first.** Regulars, role markers (Tank = Skull, Healer = Diamond) and a fill order for everyone else, in the order you choose.
+- **Who goes first.** Regulars, role markers (Tank = Skull, Healer = Diamond) and a fill order for everyone else, with pinned people and roles in the order you choose, learned assignments next and fill order last. Manual picks for this party come first.
 - **Profiles.** World, Delve and Dungeon switch automatically. Dungeon puts roles first and the world puts regulars first; change either on the Markers page.
 - **One cell per party member**, in the same compact style as Salve. Left-click a cell to put that member's marker on them, right-click to take it off.
 - **Two to five players**, out questing or in follower dungeons, dungeons and delves.
@@ -29,11 +29,24 @@ CheckMark puts a raid marker on each party member so you can spot them at a glan
 
 ## Getting started
 
-Install, then type `/checkmark` (or `/cm`) for settings. On **Markers**, **Assignments** sets who goes first, the role markers and fill order. **Regulars** holds your pinned and learned people, friend/party pickers and learning settings. **Test reminder** on the Reminder page shows the marking window with a sample party.
+Install, then type `/checkmark` (or `/cm`) for settings. On **Markers**, **Assignments** sets who goes first, the role markers and fill order. **Regulars** holds your pinned and learned people, friend/party pickers and learning settings. **Mark the party** on Assignments opens the marking window (a sample party while solo). **Test reminder** on Reminder > When and how shows the marking window with a sample party.
 
 Right-click the minimap button for a menu: settings, profiles, **Mark the party** (opens the marking window, or previews it when you're solo), **Show grid** and **Mark reminder**. Prefer right-click to open settings? Change **Minimap right-click** on Visibility. Lost a setting? The search box at the top of settings finds it.
 
 In a party, `/checkmark toggle` or **Show grid** on the minimap menu shows the grid. Left-click each cell to mark that member. Drag the small handle above the grid to move it, and right-click the handle to open settings.
+
+## Settings
+
+- **Panel:** Layout has presets, grid spacing, size and names. Position has the drag handle, Re-centre grid and Reset grid position.
+- **Markers:** Assignments has Mark the party, pinned-person/role precedence, role markers and fill order. Regulars has all pinned and learned people, adding friends or members, Forget learned and learning/sharing choices.
+- **Reminder:** When and how has triggers, timing, chat, on-screen text, sound and Test reminder. Marking window has its size, closing options and a test.
+- **Sounds:** marker sounds, selected pool and playback mode, with Check sounds and Test sound always available.
+- **Visibility:** grid show rules, then shared minimap, update and settings-window choices.
+- **Profiles:** World, Delve and Dungeon, automatic switching, and profile management.
+
+The active profile saves assignments, grid layout, position and show rules. Regulars, learning, sharing, reminders, marking-window options and sounds are shared. Turning a feature off hides its dependent controls; search still finds them and highlights the switch that enables them.
+
+Page and tab resets affect only their named settings. Reset grid visibility keeps your position, handle and shared HammerCore preferences. Re-centre grid moves only the grid; Reset grid position also restores its handle. Forget learned removes unpinned learned people across all profiles, keeps pinned people and current party picks, and leaves learning enabled.
 
 ## Commands
 

@@ -18,11 +18,9 @@ HC.spec.visibility = function(panel, y)
     local function refreshVisibility()
         if ns.applyVisibility then ns.applyVisibility() end
     end
-    local function updateHandle()
-        if ns.updateHandle then ns.updateHandle() end
-    end
 
-    _, y = O.Header(panel, "Grid", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6")
+    _, y = O.Text(panel, "Grid rules save in the active profile. Minimap, update and settings-window options below are shared.", y)
+    _, y = O.Header(panel, "Grid (per profile)", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6")
     local function setBase(mode)
         db.visibility_mode = mode
         db.visibility = {}
@@ -49,36 +47,51 @@ HC.spec.visibility = function(panel, y)
             end,
         }
     end
-    _, y = O.MultiSelect(panel, "Show",
+    _, y = O.MultiSelect(panel, "Show grid",
         "Choose Always or Never, or tick several rules; any matching rule shows the grid. It's only ever in a party of two to five, and always hides in combat.",
         y, { items = items, summary = ns.gridVisibilitySummary }, 264)
-
-    _, y = O.Header(panel, "Position", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_7")
-    _, y = O.Check(panel, "Show drag handle", "Drag the handle to move CheckMark. Right-click it for settings.", y,
-        function() return db.show_handle ~= false end,
-        function(value) db.show_handle = value; updateHandle() end)
-    local values, labels = {}, {}
-    for _, entry in ipairs(HANDLE_POSITIONS) do
-        values[#values + 1], labels[#labels + 1] = entry.value, entry.label
-    end
-    _, y = O.Dropdown(panel, "Handle position", "Which edge of the grid holds the drag handle.", y, values, labels,
-        function() return db.handle_position end,
-        function(value) db.handle_position = value; updateHandle() end)
-    _, y = O.ActionButton(panel, y, "Reset grid position", function() HC.Commands:Dispatch("reset position") end,
-        "Move CheckMark back to the centre of the screen.")
 
     _, y = O.PageReset(panel, y, function()
         db.visibility_mode = "ALWAYS"
         db.visibility = {}
         db.panel_hidden = false
-        db.show_handle = true
-        db.handle_position = "TOP"
-        db.popup_position = nil
-        local state = HC.State()
-        state.startupMessage, state.minimap, state.minimapAngle = true, true, 225
-        HC.Minimap:Update()
-        updateHandle()
         refreshVisibility()
-    end, "Reset visibility")
+    end, "Reset grid visibility")
     return y
+end
+
+-- Position is part of the grid layout, separate from visibility rules.
+function ns.BuildGridPosition(panel)
+    local O, db = ns.Options, ns.db
+    local flow = O.Flow(panel)
+    local function updateHandle() if ns.updateHandle then ns.updateHandle() end end
+    local frame = O.Section(panel, 1)
+    local y = -8
+    local master
+    _, y = O.Header(frame, "Grid position (per profile)", y)
+    master, y = O.Check(frame, "Show drag handle", "Drag to move the grid; right-click for settings.", y,
+        function() return db.show_handle ~= false end,
+        function(value) db.show_handle = value; updateHandle() end)
+    flow:Add(frame, -y + 4)
+    local position = O.Section(panel, 1, master)
+    y = -4
+    local values, labels = {}, {}
+    for _, entry in ipairs(HANDLE_POSITIONS) do
+        values[#values + 1], labels[#labels + 1] = entry.value, entry.label
+    end
+    _, y = O.Dropdown(position, "Handle position", "Which edge of the grid holds the drag handle.", y, values, labels,
+        function() return db.handle_position end,
+        function(value) db.handle_position = value; updateHandle() end)
+    flow:Add(position, -y + 4, function() return db.show_handle ~= false end)
+    local actions = O.Section(panel, 1)
+    y = -4
+    _, y = O.ActionButton(actions, y, "Re-centre grid", function() HC.Commands:Dispatch("reset position") end,
+        "Move only the grid to the centre. Keeps the handle settings.")
+    _, y = O.PageReset(actions, y, function()
+        db.show_handle, db.handle_position = true, "TOP"
+        HC.Commands:Dispatch("reset position")
+        updateHandle()
+    end, "Reset grid position")
+    flow:Add(actions, -y + 4)
+    return flow:Layout()
 end

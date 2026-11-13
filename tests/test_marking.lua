@@ -377,7 +377,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(table.concat(page.tabs, ","), "Assignments,Regulars", toc .. ": marker tabs")
     equal(page.selectedTab, "Regulars", toc .. ": Regulars selected")
     local body = page.bodies.Regulars.content
-    equal(body.regularRows[1]:IsShown(), false, toc .. ": empty list")
+    equal(#body.regularRows, 0, toc .. ": empty list allocates no rows")
     assert(page.bodies.Assignments.hcRows["Who goes first"], "assignment rules stay on Assignments")
     assert(page.bodies.Regulars.hcRows["Add a Battle.net friend"], "friend picker lives on Regulars")
     equal(settings:Search("Add a Battle.net friend")[1].tab, "Regulars", toc .. ": search finds the new tab")

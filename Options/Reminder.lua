@@ -1,90 +1,105 @@
 local addon, ns = ...
-local HC = ns.HammerCore
-local O = HC.UI
+local HC, O = ns.HammerCore, ns.Options
 
--- When CheckMark nudges you to mark the party, how long it waits, and how.
-
-local ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_1"
-local TIMING_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_5"
-local WINDOW_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6"
-local HOW_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_2"
-
-local function seconds(value) return value .. " s" end
-
-HC.Settings:NewPage({
-    name = "Reminder",
-    title = "Reminder",
-    group = "main",
-    description = "A nudge to mark your party when it forms.",
-}, function(panel, y)
-    local db = ns.db
-    local switches, dependants = {}, {}
-    local function check(label, hint, key)
-        local row
-        row, y = O.Check(panel, label, hint, y,
-            function() return db[key] end,
+-- Shared settings. Each dependency gets its own section so hiding it reflows
+-- the page and search can focus the switch which makes it available.
+local WINDOW_KEYS = { remind_window = true, remind_close_done = true, remind_timeout = true,
+    remind_timeout_seconds = true, remind_window_size = true }
+local function build(panel, window)
+    local db, flow = ns.db, O.Flow(panel)
+    local function section(fill, visible, parent)
+        local frame = O.Section(panel, 1, parent)
+        local bottom, result = fill(frame, -4)
+        flow:Add(frame, -O.Flush(frame, bottom) + 4, visible)
+        return result
+    end
+    local function check(frame, y, label, hint, key)
+        return O.Check(frame, label, hint, y, function() return db[key] end,
             function(value) db[key] = value end)
-        switches[#switches + 1] = row
-        return row
     end
-    -- A switch and, beside it, its seconds slider (hidden while it's off).
-    local function timed(label, hint, key, sliderLabel, sliderHint, secondsKey, low, high)
-        y = O.Columns(panel, 2, y)
-        local top = y
-        local row = check(label, hint, key)
-        local slider, nextY = O.Slider(panel, sliderLabel, sliderHint, top, low, high, 1,
-            function() return db[secondsKey] end, function(value) db[secondsKey] = value end, seconds)
-        dependants[#dependants + 1] = { row = slider, key = key }
-        y = O.Columns(panel, 1, math.min(y, nextY))
-        return row
+    local function timed(label, hint, key, sliderLabel, secondsKey, low, high, visible, parent)
+        local toggle = section(function(frame, y)
+            local row; row, y = check(frame, y, label, hint, key)
+            return y, row
+        end, visible, parent)
+        section(function(frame, y)
+            _, y = O.Slider(frame, sliderLabel, "How long to wait, in seconds.", y, low, high, 1,
+                function() return db[secondsKey] end, function(value) db[secondsKey] = value end,
+                function(value) return value .. " s" end)
+            return y
+        end, function() return (not visible or visible()) and db[key] end, toggle)
     end
-
-    _, y = O.Header(panel, "When", y, ICON)
-    check("Remind me to mark", "Turn the mark reminder on or off.", "remind_enabled")
-    check("When I join a party", "Remind when you join or form a party.", "remind_on_join")
-    check("When someone joins", "Remind when a new player joins your party.", "remind_on_member")
-    check("Only as party leader", "Stay quiet unless you lead the party.", "remind_leader_only")
-    check("Quiet if someone else marks", "Skip the reminder when another CheckMark user in the party is already marking.",
-        "remind_quiet_others")
-    _, y = O.Text(panel, "Follows the grid's Show rules on Visibility, so it waits until the grid can show.", y)
-
-    _, y = O.Header(panel, "Timing", y, TIMING_ICON)
-    timed("Wait after joining", "Wait a moment so everyone's in. Each new joiner restarts the wait.", "remind_join_wait",
-        "Seconds after joining", "How long to wait after the last person joins.", "remind_join_seconds", 1, 10)
-    timed("Wait after combat", "A reminder held through a fight waits a moment, so you can loot first.", "remind_combat_wait",
-        "Seconds after combat", "How long to wait after combat ends.", "remind_combat_seconds", 1, 15)
-
-    _, y = O.Header(panel, "Marking window", y, WINDOW_ICON)
-    check("Show the marking window", "Pop up a window with a big card for each member. Click each card to mark them.",
-        "remind_window")
-    check("Close when all clicked", "Close the window once you've clicked everyone.", "remind_close_done")
-    timed("Close after a while", "Close the window on its own after a set time.", "remind_timeout",
-        "Seconds open", "How long the window stays open.", "remind_timeout_seconds", 5, 60)
-    local size
-    size, y = O.Dropdown(panel, "Window size", "How big the marking window is.", y,
-        ns.MarkWindow.SIZE_VALUES, ns.MarkWindow.SIZE_LABELS,
-        function() return db.remind_window_size end,
-        function(value)
-            db.remind_window_size = value
-            if ns.MarkWindow:IsShown() then ns.MarkWindow:Refresh() end
+    if window then
+        local master = section(function(frame, y)
+            _, y = O.Header(frame, "Marking window (shared)", y)
+            local row; row, y = check(frame, y, "Show the marking window",
+                "Open a card for each member when a reminder fires. Click each card to mark them. Manual opening from the minimap remains available.", "remind_window")
+            return y, row
         end)
-
-    _, y = O.Header(panel, "Also", y, HOW_ICON)
-    check("Chat message", "Print the reminder in chat.", "remind_chat")
-    check("On-screen message", "Show the reminder in the middle of the screen, like a raid warning.", "remind_screen")
-    check("Sound", "Play the raid warning sound.", "remind_sound")
-
-    O.OnRefresh(panel, function()
-        for index, row in ipairs(switches) do
-            if index > 1 then O.SetEnabled(row.hcCheckbox, db.remind_enabled) end
-        end
-        for _, item in ipairs(dependants) do item.row:SetShown(db[item.key] == true) end
+        local function enabled() return db.remind_window end
+        section(function(frame, y)
+            _, y = O.Dropdown(frame, "Window size", "Size of the member cards.", y,
+                ns.MarkWindow.SIZE_VALUES, ns.MarkWindow.SIZE_LABELS,
+                function() return db.remind_window_size end, function(value)
+                    db.remind_window_size = value
+                    if ns.MarkWindow:IsShown() then ns.MarkWindow:Refresh() end
+                end)
+            _, y = check(frame, y, "Close when all clicked", "Close once you have clicked every card. A click is not confirmation of the game's marker state.", "remind_close_done")
+            return y
+        end, enabled, master)
+        timed("Close after a while", "Close the window automatically after this time.", "remind_timeout",
+            "Seconds open", "remind_timeout_seconds", 5, 60, enabled, master)
+    else
+        local master = section(function(frame, y)
+            _, y = O.Header(frame, "Party reminder (shared)", y)
+            local row; row, y = check(frame, y, "Remind me to mark", "Enable automatic reminder triggers. Test reminder still works when this is off.", "remind_enabled")
+            return y, row
+        end)
+        local function enabled() return db.remind_enabled end
+        section(function(frame, y)
+            _, y = O.Header(frame, "When", y)
+            for _, spec in ipairs({
+                { "When I join a party", "Remind when you join or form a party.", "remind_on_join" },
+                { "When someone joins", "Remind when a new player joins your party.", "remind_on_member" },
+                { "Only as party leader", "Stay quiet unless you lead the party.", "remind_leader_only" },
+                { "Quiet if someone else marks", "Skip the reminder when another CheckMark user is already marking.", "remind_quiet_others" },
+            }) do _, y = check(frame, y, spec[1], spec[2], spec[3]) end
+            _, y = O.Text(frame, "Uses Show grid on Visibility. Timing and outputs are shared by every profile.", y)
+            _, y = O.Header(frame, "Timing", y)
+            return y
+        end, enabled, master)
+        timed("Wait after joining", "Each new joiner restarts the wait.", "remind_join_wait",
+            "Seconds after joining", "remind_join_seconds", 1, 10, enabled, master)
+        timed("Wait after combat", "A reminder held during combat waits so you can loot first. This replaces the joining wait.", "remind_combat_wait",
+            "Seconds after combat", "remind_combat_seconds", 1, 15, enabled, master)
+        -- Outputs stay available for testing even while automatic reminders are off.
+        section(function(frame, y)
+            _, y = O.Header(frame, "Reminder outputs", y)
+            for _, spec in ipairs({
+                { "Chat message", "Print the reminder in chat.", "remind_chat" },
+                { "On-screen message", "Show a message like a raid warning.", "remind_screen" },
+                { "Reminder sound", "Play the raid warning sound. Marker sounds have their own Sounds page.", "remind_sound" },
+            }) do _, y = check(frame, y, spec[1], spec[2], spec[3]) end
+            _, y = O.SettingLink(frame, y, "Marking window settings", "Reminder", "Show the marking window")
+            return y
+        end)
+    end
+    section(function(frame, y)
+        _, y = O.ActionButton(frame, y, window and "Test marking window" or "Test reminder", function() ns.Reminder:Test() end,
+            "Test your chosen outputs, even with reminders off. The enabled marking window uses a sample party.", "primary")
+        _, y = O.PageReset(frame, y, function()
+            for key, value in pairs(ns.Reminder.DEFAULTS) do
+                if (WINDOW_KEYS[key] == true) == window then db[key] = value end
+            end
+        end, window and "Reset marking window" or "Reset reminder")
+        return y
     end)
-
-    _, y = O.ActionButton(panel, y, "Test reminder", function() ns.Reminder:Test() end,
-        "Show the reminder now, with the outputs chosen above. The window shows a sample party.")
-    _, y = O.PageReset(panel, y, function()
-        for key, value in pairs(ns.Reminder.DEFAULTS) do db[key] = value end
-    end, "Reset reminder")
-    return y
-end)
+    return flow:Layout()
+end
+HC.Settings:NewPage({ name = "Reminder", title = "Reminder", group = "main", profileScope = false,
+    description = "Choose when to be reminded, how it appears and how the marking window behaves.",
+    tabs = {
+        { name = "When and how", build = function(panel) return build(panel, false) end, columns = 1 },
+        { name = "Marking window", build = function(panel) return build(panel, true) end, columns = 1 },
+    },
+})

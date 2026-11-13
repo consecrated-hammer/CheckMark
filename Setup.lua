@@ -1,6 +1,47 @@
 local addonName, ns = ...
 local HC = ns.HammerCore
 
+ns.Options = setmetatable({}, { __index = HC.UI })
+
+-- Sections share their page's refresh list and search index.
+function ns.Options.Section(parent, columns, parentRow)
+    local frame = CreateFrame("Frame", nil, parent)
+    frame:SetSize(HC.UI.CONTENT_WIDTH + HC.UI.PAD * 2, 1)
+    frame.hcColumns = columns or 2
+    frame.hcRefresh, frame.hcRefreshAll = parent.hcRefresh, parent.hcRefreshAll
+    frame.hcHeaderOwner = parent.hcHeaderOwner or parent
+    frame.hcParentRow = parentRow
+    return frame
+end
+
+-- Hidden dependent sections leave no gap and keep a searchable parent.
+function ns.Options.Flow(panel)
+    local flow = { entries = {}, y = -8 }
+    function flow:Add(frame, height, visible, parentRow)
+        if parentRow then frame.hcParentRow = parentRow end
+        self.entries[#self.entries + 1] = { frame = frame, height = height, visible = visible }
+    end
+    function flow:Layout()
+        local y = -8
+        for _, entry in ipairs(self.entries) do
+            local shown = not entry.visible or entry.visible()
+            entry.frame:SetShown(shown)
+            if shown then
+                entry.frame:ClearAllPoints()
+                entry.frame:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y)
+                local height = type(entry.height) == "function" and entry.height() or entry.height
+                entry.frame:SetHeight(height)
+                y = y - height
+            end
+        end
+        self.y = y - 8
+        if panel.hcSetBottom then panel.hcSetBottom(self.y) end
+        return self.y
+    end
+    panel.hcRefresh[#panel.hcRefresh + 1] = function() flow:Layout() end
+    return flow
+end
+
 -- Declares CheckMark to HammerCore: commands, grid actions, the minimap
 -- menu, status, diagnostics and About content.
 
@@ -113,7 +154,7 @@ local WHATS_NEW = {
         { title = "Markers follow people", text = "Pin someone to a marker and they keep it on any of their characters if they're a Battle.net friend.",
             page = "Markers" },
         { title = "It learns", text = "CheckMark remembers the markers you pick, and party members running CheckMark share theirs. Manage pinned and learned people on Markers > Regulars.",
-            page = "Markers" },
+            page = "Markers", tab = "Regulars" },
         { title = "World, Delve, Dungeon", text = "Profiles switch automatically, so dungeons can go by role and the open world by who's who.",
             page = "Profiles" },
         { title = "Good timing", text = "Reminders wait a couple of seconds after someone joins, and a few after combat so you can loot first.",

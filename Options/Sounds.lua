@@ -1,6 +1,6 @@
 local addonName, ns = ...
 local HC = ns.HammerCore
-local O, T = HC.UI, HC.Theme
+local O = ns.Options
 
 local function soundItems()
     local items = {}
@@ -26,17 +26,23 @@ end
 HC.Settings:NewPage({
     name = "Sounds",
     title = "Sounds",
-    group = "main",
+    group = "main", profileScope = false,
     description = "Choose the optional sound played after applying a prepared marker.",
 }, function(panel, y)
+    local flow = O.Flow(panel)
+    local root = panel
+    panel = O.Section(root, 1)
     local heading
     heading, y = O.Header(panel, "Marker sound", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_2")
-    _, y = O.Check(panel, "Play a sound when applying a marker",
+    local master
+    master, y = O.Check(panel, "Play marker sounds",
         "Enabled by default. The sound plays after a left-click submits a prepared marker action.",
         y, function() return ns.db.marker_sound_enabled ~= false end,
         function(value) ns.db.marker_sound_enabled = value end)
 
-    _, y = O.MultiSelect(panel, "Sounds",
+    flow:Add(panel, -y + 4)
+    panel = O.Section(root, 1, master); y = -4
+    _, y = O.MultiSelect(panel, "Available sounds",
         "Select the sounds available to both playback modes. At least one sound always remains selected.",
         y, { items = soundItems(), summary = selectedSummary,
             -- Deselect all keeps one sound: the pool is never empty.
@@ -51,6 +57,8 @@ HC.Settings:NewPage({
         summary = function() return ns.db.marker_sound_mode == "SEQUENTIAL" and "Sequential" or "Random" end,
     }, 264)
 
+    flow:Add(panel, -y + 4, function() return ns.db.marker_sound_enabled ~= false end)
+    panel = O.Section(root, 1); y = -4
     local check
     check, y = O.ActionButton(panel, y, "Check sounds", function() HC.Commands:Dispatch("sounds") end,
         "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
@@ -69,5 +77,6 @@ HC.Settings:NewPage({
         ns.initializeMarkerSoundSettings()
         if ns.resetMarkerSoundSequence then ns.resetMarkerSoundSequence() end
     end, "Reset sounds")
-    return y
+    flow:Add(panel, -y + 4)
+    return flow:Layout()
 end)

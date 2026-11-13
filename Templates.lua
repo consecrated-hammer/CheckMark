@@ -88,6 +88,9 @@ local function describe(member, key)
 end
 
 local function now() return time and time() or 0 end
+local function refreshRegulars()
+    if ns.RefreshRegularsSearch then ns.RefreshRegularsSearch() end
+end
 
 local function trim()
     local list, learned = regulars(), {}
@@ -106,6 +109,7 @@ local function save(member, marker, pinned)
     regulars()[key] = { marker = marker, pinned = pinned or nil, label = describe(member, key),
         seen = member.label or member.first, at = now() }
     trim()
+    refreshRegulars()
     return key
 end
 
@@ -130,6 +134,7 @@ function Assign.Unpin(member)
         local entry = regulars()[key]
         if type(entry) == "table" and entry.pinned then regulars()[key] = nil end
     end
+    refreshRegulars()
 end
 
 function Assign.IsPinned(member)
@@ -140,14 +145,16 @@ end
 function Assign.PinTag(tag, marker, character)
     if not (tag and tonumber(marker)) then return end
     regulars()["bnet:" .. tag] = { marker = tonumber(marker), pinned = true, label = tag, seen = character, at = now() }
+    refreshRegulars()
 end
 
-function Assign.Forget(key) regulars()[key] = nil end
+function Assign.Forget(key) regulars()[key] = nil; refreshRegulars() end
 
 function Assign.ForgetLearned()
     for key, entry in pairs(regulars()) do
         if type(entry) ~= "table" or not entry.pinned then regulars()[key] = nil end
     end
+    refreshRegulars()
 end
 
 -- Sorted for the Markers page: pinned first by name, then most recent.

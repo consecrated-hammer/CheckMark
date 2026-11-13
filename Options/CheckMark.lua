@@ -1,23 +1,17 @@
 local addonName, ns = ...
 local HC = ns.HammerCore
-local O, T = HC.UI, HC.Theme
+local O, T = ns.Options, HC.Theme
 
 -- Section headings wear the raid markers.
 local ICONS = { presets = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_1", grid = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_6", size = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_3", contents = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_4" }
 
 -- columns: 2 lays the section's settings out two to a row.
-local function section(parent, columns)
-    local frame = CreateFrame("Frame", nil, parent)
-    frame:SetSize(O.CONTENT_WIDTH + O.PAD * 2, 1)
-    frame.hcColumns = columns
-    frame.hcRefresh = parent.hcRefresh
-    frame.hcRefreshAll = parent.hcRefreshAll
-    return frame
-end
+local section = O.Section
 local function refreshGrid() if ns.refreshPopup then ns.refreshPopup() end end
 
 HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", description = "Shape the compact five-player marker grid.",
-    headerAction = ns.LivePreviewAction }, function(panel)
+    headerAction = ns.LivePreviewAction,
+    tabs = { { name = "Layout", build = function(panel)
     local db = ns.db
     local presets = section(panel); local presetY = -8
     _, presetY = O.Header(presets, "Presets", presetY, ICONS.presets)
@@ -30,7 +24,8 @@ HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", descr
         local note = button:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
         note:SetPoint("TOPLEFT", button.Text, "BOTTOMLEFT", 0, -2); note:SetText(spec[2]); note:SetTextColor(T.Unpack("muted")); note:SetJustifyH("LEFT")
         button:SetScript("OnClick", function() db.cell_width, db.cell_height, db.icon_size, db.cell_columns, db.cell_spacing, db.show_cell_names = spec[3], spec[4], spec[5], spec[6], spec[7], spec[8]; refreshGrid(); presets.hcRefreshAll() end)
-        O.AttachHint(button, spec[1], "Apply this grid shape.")
+        O.AttachHint(button, spec[1], "Apply this grid layout preset. Saved per profile.")
+        O.RegisterRow(presets, button, spec[1])
     end
     local presetsHeight = -presetY + 70
     local grid = section(panel, 2); local gy = -8; _, gy = O.Header(grid, "Grid", gy, ICONS.grid)
@@ -47,5 +42,12 @@ HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", descr
     cy = O.Flush(contents, cy)
     local y = -8
     for _, item in ipairs({ { presets, presetsHeight }, { grid, -gy + 4 }, { size, -sy + 4 }, { contents, -cy + 4 } }) do item[1]:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y); item[1]:SetHeight(item[2]); y = y - item[2] - 8 end
+    _, y = O.PageReset(panel, y, function()
+        for _, key in ipairs({ "cell_width", "cell_height", "icon_size", "cell_columns", "cell_spacing", "show_cell_names" }) do
+            ns.db[key] = ns.DEFAULT_DB[key]
+        end
+        refreshGrid()
+    end, "Reset grid layout")
     return y
-end)
+end }, { name = "Position", build = function(panel) return ns.BuildGridPosition(panel) end } },
+})

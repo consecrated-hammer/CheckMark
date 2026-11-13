@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Panel now groups Layout and Position in tabs. Visibility resets only grid show rules.
+- Reminder separates When and how from Marking window, with independent resets and dependent controls that close up without gaps.
+- All Panel controls and layout presets are searchable. Hidden options focus the switch that enables them.
+- Regulars lists every saved person, keeps search current after edits and explains pinned versus learned assignments.
+- Assignment precedence and duplicate-marker fallback are explained, with a Mark the party shortcut beside the plan.
+- Sound selection hides when disabled, while Check sounds and Test sound stay available. Profiles now sits after the everyday settings pages.
+- SavedVariables keys, schema, profile scope, defaults and gameplay behaviour are unchanged.
+
 ## [1.4.0] - 2026-11-10
 
 The "who's the Diamond again?" update.
