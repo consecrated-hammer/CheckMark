@@ -1,8 +1,8 @@
 ## Interface: 120105
 ## Title: CheckMark
 ## Author: consecrated-hammer
-## Version: 1.4.0
-## X-ReleaseDate: 2026-11-10
+## Version: 1.5.0
+## X-ReleaseDate: 2026-11-13
 ## Notes: Raid markers on your party, one click each, for 2-5 player parties.
 ## X-Curse-Project-ID: 1673005
 ## X-Website: https://github.com/consecrated-hammer/CheckMark

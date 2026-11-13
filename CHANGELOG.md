@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-13
+
 ### Changed
 
 - Show the dragged fill-order marker at the cursor and a clear insertion line between icons.

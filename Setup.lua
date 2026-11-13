@@ -148,6 +148,11 @@ end
 -- HammerCore's tools/whatsnew_check.py fails the release without one. A
 -- `page` adds a link to that settings page.
 local WHATS_NEW = {
+    { version = "1.5.0", date = "2026-11-13", items = {
+        { title = "Clearer marker planning", text = "Drag fill-order markers with a cursor icon and insertion line. Who goes first fits its full labels, People keeps controls above the list, and Forget learned confirms the count.", kind = "improved", page = "Markers", tab = "Assignments" },
+        { title = "Settings that fit", text = "Two-column controls, larger profile icons, scoped reset confirmations and search across every setting. Grid and Reminder each keep related controls in tabs.", kind = "improved", page = "Grid", tab = "Layout" },
+        { title = "Preview and sounds", text = "Drag the live preview near settings to snap it alongside, or drag away to detach. Forever no longer offers the unsupported Quest Complete sound.", kind = "improved", page = "Sounds" },
+    } },
     { version = "1.4.0", date = "2026-11-10", items = {
         { title = "Mark your party", text = "When your party forms, a big window pops up with everyone's marker. Click each person to mark them.",
             page = "Reminder" },
