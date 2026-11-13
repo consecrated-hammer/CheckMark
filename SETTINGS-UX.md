@@ -51,7 +51,7 @@ scope and destination; nothing is removed from SavedVariables.
 | Visibility | Show: Always/Never or any matching dungeon/delve/world/leader rules | S | Show grid, explicitly per profile | Profile |
 | Visibility | Reset visibility | S | Reset grid visibility preserves position, handle and shared preferences | Profile + manual hide |
 | Visibility (HammerCore) | Show minimap button, Minimap right-click | S | Minimap button section | Shared |
-| Visibility (HammerCore) | Show startup message, Show what's new after updates, Mark unread What's new, Turn-in sound | A | Updates section | Shared |
+| Visibility (HammerCore) | Show startup message, Show what's new after updates, Show unread marker, What's new sound | A | Updates section | Shared |
 | Visibility (HammerCore) | Settings search, Show support links | A | Settings window section | Shared |
 | Window header | Window scale, search, live preview, active profile link | S | Retained; profile badge suppressed on shared-only tabs/pages | Shared / action |
 | Profiles > Profiles | Active profile, rename/new/delete/copy, copy groups, new-profile source, per-character selection | S/A | Retained, page moved after everyday settings | Shared profile manager |
@@ -112,3 +112,11 @@ Kevin approved a fresh Codex review, which found two P2 issues. Assignment
 reset now restores precedence before refreshing the grid/window/preview. The
 mixed Visibility page keeps the active-profile badge and explicitly identifies
 its shared settings. Both findings have targeted regression coverage.
+
+## Polish follow-ups
+
+Assignments shows the selected rule order and a visible fill-order hint. People
+keeps learning and Add controls above the growing list; existing pinned-first
+sorting is retained. Forget learned shows a count and confirms before clearing,
+while single-person removal stays immediate. Sounds uses a standard Playback
+dropdown and puts Test sound before Find missing sounds.

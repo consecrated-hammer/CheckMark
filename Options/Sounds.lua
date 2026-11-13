@@ -49,16 +49,16 @@ HC.Settings:NewPage({
             bulk = function(selected) ns.selectAllMarkerSounds(selected) end }, 264)
 
 
-    _, y = O.MultiSelect(panel, "Playback", "Random chooses from selected sounds. Sequential follows the selected sounds in catalogue order.", y, {
-        items = {
-            { label = "Random", radio = true, get = function() return ns.db.marker_sound_mode == "RANDOM" end, set = function() ns.db.marker_sound_mode = "RANDOM" end },
-            { label = "Sequential", radio = true, get = function() return ns.db.marker_sound_mode == "SEQUENTIAL" end, set = function() ns.db.marker_sound_mode = "SEQUENTIAL" end },
-        },
-        summary = function() return ns.db.marker_sound_mode == "SEQUENTIAL" and "Sequential" or "Random" end,
-    }, 264)
+    _, y = O.Dropdown(panel, "Playback", "Random chooses from selected sounds. Sequential follows the selected sounds in catalogue order.",
+        y, { "RANDOM", "SEQUENTIAL" }, { "Random", "Sequential" },
+        function() return ns.db.marker_sound_mode end,
+        function(value) ns.db.marker_sound_mode = value end)
 
     flow:Add(panel, -y + 4, function() return ns.db.marker_sound_enabled ~= false end)
     panel = O.Section(root, 1); y = -4
+    _, y = O.ActionButton(panel, y, "Test sound", function() if ns.playMarkerSound then ns.playMarkerSound(true) end end,
+        "Previews from the selected pool using the current playback mode, even if marker sounds are disabled.", "primary")
+
     local check
     check, y = O.ActionButton(panel, y, "Find missing sounds", function() HC.Commands:Dispatch("sounds") end,
         "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
@@ -67,8 +67,6 @@ HC.Settings:NewPage({
     HC.UI.OnRefresh(panel, function() result:SetText(ns.markerSoundCheckSummary()) end)
     result:SetText(ns.markerSoundCheckSummary())
 
-    _, y = O.ActionButton(panel, y, "Test sound", function() if ns.playMarkerSound then ns.playMarkerSound(true) end end,
-        "Previews from the selected pool using the current playback mode, even if marker sounds are disabled.", "primary")
 
     _, y = O.PageReset(panel, y, function()
         ns.db.marker_sound_enabled = true

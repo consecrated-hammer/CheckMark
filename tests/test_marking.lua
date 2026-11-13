@@ -390,6 +390,13 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(settings:Search("Bianca")[1].tab, "People", toc .. ": search finds a regular")
     local forget = assert(wow.FindButton("Forget learned"))
     forget.scripts.OnClick(forget)
+    local dialog = ns.HammerCore.Dialog
+    equal(#A.List(), 2, toc .. ": forget waits for confirmation")
+    equal(dialog.current.text, "Forget 1 learned person? Pinned people stay.", toc .. ": confirmation names learned count and preserves pins")
+    wow.Click(dialog.frame.cancel)
+    equal(#A.List(), 2, toc .. ": cancel preserves learned people")
+    forget.scripts.OnClick(forget)
+    wow.Click(dialog.frame.accept)
     equal(page.selectedTab, "People", toc .. ": edits keep the People tab")
     equal(#A.List(), 1, toc .. ": forget learned preserves pinned regulars")
     equal(body.regularRows[2]:IsShown(), false, toc .. ": removed entry is hidden")

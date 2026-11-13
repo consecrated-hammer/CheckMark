@@ -215,8 +215,23 @@ local function assignments(panel, y)
         function(value) db.marker_rules = value; changed() end, nil, nil, 200)
     local where
     where, y = O.Text(panel, "", y)
+    -- The sentence mirrors Assign.Plan; it describes the rule without
+    -- changing the saved rule value or assignment decisions.
+    local orders = {
+        REGULARS_ROLES = "party picks, pinned people, tank and healer, learned people, fill order.",
+        ROLES_REGULARS = "party picks, tank and healer, pinned people, learned people, fill order.",
+        REGULARS = "party picks, pinned people, learned people, fill order.",
+        ROLES = "party picks, tank and healer, fill order.",
+        FILL = "party picks, fill order.",
+    }
+    if where.SetWordWrap then where:SetWordWrap(false) end
+    panel.assignmentOrder = where
+    O.AttachTitleHint(panel, where, "Assignment order", function()
+        local order = orders[db.marker_rules] or orders.REGULARS_ROLES
+        return "First, " .. order:gsub("party picks", "anyone you pick by hand in this party"):gsub(", ", ", then ")
+    end)
     O.OnRefresh(panel, function()
-        where:SetText("Saved in the " .. tostring(HC.Profiles:Active() or "active") .. " profile, with the role markers and fill order.")
+        where:SetText("Order: " .. (orders[db.marker_rules] or orders.REGULARS_ROLES))
     end)
 
     _, y = O.Header(panel, "Role markers (per profile)", y, ICONS.roles)
@@ -237,6 +252,7 @@ local function assignments(panel, y)
     _, y = O.Text(panel, "Each marker is used once. If two people want the same one, the earlier rule wins and the other takes the next free marker.", y)
     _, y = O.Header(panel, "Fill order", y, ICONS.fill)
     _, y = fillStrip(panel, y)
+    _, y = O.Text(panel, "First to last. Click moves a marker earlier, right-click later.", y)
 
     _, y = O.PageReset(panel, y, function()
         db.role_template = { TANK = ns.Assign.ROLE_DEFAULT.TANK, HEALER = ns.Assign.ROLE_DEFAULT.HEALER }
@@ -268,7 +284,19 @@ local function regulars(panel, y)
     controls.hcRefreshAll = panel.hcRefreshAll
     controls.hcHeaderOwner = panel.hcHeaderOwner or panel
     local listTop = y
+    controls:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, listTop)
     y = -4
+    _, y = O.Header(controls, "Learning and party sharing (shared)", y, ICONS.learning)
+    for _, spec in ipairs({
+        { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when pinned people are included.", "learn_mine" },
+        { "Share with the party", "Tell party members running CheckMark who you marked with what.", "share_party" },
+        { "Learn from the party", "Learn from what party members running CheckMark mark.", "learn_party" },
+    }) do
+        _, y = O.Check(controls, spec[1], spec[2], y,
+            function() return db[spec[3]] ~= false end,
+            function(value) db[spec[3]] = value end)
+    end
+
     _, y = O.DynamicDropdown(controls, "Add a Battle.net friend", "Pin a friend's account: they keep the marker on every character.", y,
         function()
             ns.Identity:RefreshFriends()
@@ -312,23 +340,19 @@ local function regulars(panel, y)
             rebuild()
         end)
     _, y = O.ActionButton(controls, y, "Forget learned", function()
-        ns.Assign.ForgetLearned()
-        rebuild()
-    end, "Remove all unpinned learned people from every profile. Pinned people and this party's current picks stay. Learning remains enabled and may learn them again.")
+        local count = 0
+        for _, item in ipairs(ns.Assign.List()) do if not item.pinned then count = count + 1 end end
+        HC.Dialog:Confirm({ title = "Forget learned", text = "Forget " .. count .. " learned "
+            .. (count == 1 and "person" or "people") .. "? Pinned people stay.", accept = "Forget",
+            onAccept = function() ns.Assign.ForgetLearned(); rebuild() end })
+    end, "Remove all unpinned learned people from every profile. Pinned people and this party's current picks stay. Learning remains enabled and may learn them again.", "danger")
 
-    _, y = O.Header(controls, "Learning and party sharing (shared)", y, ICONS.learning)
-    for _, spec in ipairs({
-        { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when pinned people are included.", "learn_mine" },
-        { "Share with the party", "Tell party members running CheckMark who you marked with what.", "share_party" },
-        { "Learn from the party", "Learn from what party members running CheckMark mark.", "learn_party" },
-    }) do
-        _, y = O.Check(controls, spec[1], spec[2], y,
-            function() return db[spec[3]] ~= false end,
-            function(value) db[spec[3]] = value end)
-    end
 
     local controlsBottom, pageBottom = y
     controls:SetHeight(-controlsBottom + 4)
+    listTop = listTop + controlsBottom - 8
+    list:ClearAllPoints()
+    list:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, listTop)
     local function refreshRegulars()
         local items = ns.Assign.List()
         local count = #items
@@ -350,7 +374,7 @@ local function regulars(panel, y)
         end
         for index, row in ipairs(rows) do row:SetItem(index <= count and items[index] or nil) end
         local bottom = count > 0 and bottoms[count] or 0
-        local message = #items == 0 and "Nobody yet. Pin someone from the marking window, or add a friend below."
+        local message = #items == 0 and "Nobody yet. Pin someone from the marking window, or add a friend above."
             or nil
         note:SetShown(message ~= nil)
         if message then
@@ -360,9 +384,7 @@ local function regulars(panel, y)
             bottom = bottom - note:GetStringHeight() - 12
         end
         list:SetHeight(math.max(1, -bottom))
-        controls:ClearAllPoints()
-        controls:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, listTop + bottom - 8)
-        pageBottom = listTop + bottom - 8 + controlsBottom
+        pageBottom = listTop + bottom - 8
         if panel.hcSetBottom then panel.hcSetBottom(pageBottom) end
     end
     ns.RefreshRegularsSearch = refreshRegulars

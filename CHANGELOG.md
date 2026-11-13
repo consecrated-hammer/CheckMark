@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Markers shows the rule order in plain words. Learning and Add controls stay above the People list, and Forget learned asks before removing anyone.
+- Playback uses one dropdown; Test sound comes before Find missing sounds.
+
 - Grid, People, marker rules and sound controls now use the same plain names throughout settings and search.
 
 - Panel now groups Layout and Position in tabs. Visibility resets only grid show rules.

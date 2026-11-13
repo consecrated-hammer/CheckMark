@@ -97,6 +97,19 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
             wow.Click(HC.Dialog.frame.accept)
         end
     end
+    local expectedOrders = {
+        REGULARS_ROLES = "Order: party picks, pinned people, tank and healer, learned people, fill order.",
+        ROLES_REGULARS = "Order: party picks, tank and healer, pinned people, learned people, fill order.",
+        REGULARS = "Order: party picks, pinned people, learned people, fill order.",
+        ROLES = "Order: party picks, tank and healer, fill order.",
+        FILL = "Order: party picks, fill order.",
+    }
+    for rule, text in pairs(expectedOrders) do
+        db.marker_rules = rule
+        refresh("Markers", "Assignments")
+        equal(HC.Settings.pages.Markers.bodies.Assignments.content.assignmentOrder:GetText(), text,
+            "visible order follows " .. rule)
+    end
     local reminder = rows("Reminder", "When and how")
     local seconds = reminder["Seconds after joining"]
     equal(HC.Settings:Focus("Reminder", "Seconds after joining", "When and how"), reminder["Remind me to mark"], "disabled reminder focuses master")
@@ -124,6 +137,10 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(HC.Settings:Focus("Sounds", "Available sounds"), sounds["Play marker sounds"], "disabled sounds focus master")
     equal(HC.Settings:Focus("Sounds", "Find missing sounds"), sounds["Find missing sounds"], "sound diagnosis remains available")
     equal(HC.Settings:Focus("Sounds", "Test sound"), sounds["Test sound"], "sound test remains available")
+    local _, _, testY = sounds["Test sound"]:GetPoint()
+    local _, _, findY = sounds["Find missing sounds"]:GetPoint()
+    assert(testY > findY, "sound test comes before diagnosis")
+
     db.show_handle = false
     local position = rows("CheckMark", "Position")
     equal(HC.Settings:Focus("CheckMark", "Handle position", "Position"), position["Show drag handle"], "hidden handle position focuses switch")
@@ -166,6 +183,11 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     refresh("Markers", "People")
     local body = HC.Settings.pages.Markers.bodies.People.content
     equal(#body.regularRows, 27, "all regulars get rows")
+    local controls = HC.Settings.pages.Markers.bodies.People.hcRows["Add a Battle.net friend"]:GetParent()
+    local _, _, _, _, controlsTop = controls:GetPoint()
+    local _, _, _, _, listTop = body.regularRows[1]:GetParent():GetPoint()
+    assert(controlsTop > listTop, "learning and Add controls stay above a long People list")
+
     assert(#HC.Settings:Search("Person27") > 0, "last regular is searchable")
     ns.Assign.Forget("bnet:Person27#1234")
     equal(#HC.Settings:Search("Person27"), 0, "removed regular leaves no search result")
