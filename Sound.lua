@@ -4,7 +4,7 @@ local addonName, ns = ...
 -- page and both playback modes derive their choices from this ordered list.
 -- `only` names the one client a sound exists on; players only ever see the
 -- sounds their client has. Retail-only kits were found missing on WoW
--- Forever with Check sounds; the rest are long-standing kits both have.
+-- Forever with Find missing sounds; the rest are long-standing kits both have.
 local CATALOGUE = {
     { id = 416, name = "Murloc Aggro" },
     { id = 11965, name = "A Horseman Laugh", only = "retail" },

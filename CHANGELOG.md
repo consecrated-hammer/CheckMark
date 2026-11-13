@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Grid, People, marker rules and sound controls now use the same plain names throughout settings and search.
+
 - Panel now groups Layout and Position in tabs. Visibility resets only grid show rules.
 - Reminder separates When and how from Marking window, with independent resets and dependent controls that close up without gaps.
 - All Panel controls and layout presets are searchable. Hidden options focus the switch that enables them.

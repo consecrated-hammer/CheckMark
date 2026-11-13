@@ -117,7 +117,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(db.remind_join_seconds, 2, "reminder reset restores timing")
     local sounds = rows("Sounds")
     equal(HC.Settings:Focus("Sounds", "Available sounds"), sounds["Play marker sounds"], "disabled sounds focus master")
-    equal(HC.Settings:Focus("Sounds", "Check sounds"), sounds["Check sounds"], "sound diagnosis remains available")
+    equal(HC.Settings:Focus("Sounds", "Find missing sounds"), sounds["Find missing sounds"], "sound diagnosis remains available")
     equal(HC.Settings:Focus("Sounds", "Test sound"), sounds["Test sound"], "sound test remains available")
     db.show_handle = false
     local position = rows("CheckMark", "Position")
@@ -158,8 +158,8 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(db.cell_width, 119, "assignment reset preserves grid")
     -- Every person remains editable and searchable beyond the old 20-row cap.
     for index = 1, 27 do ns.Assign.PinTag("Person" .. index .. "#1234", index % 8 + 1) end
-    refresh("Markers", "Regulars")
-    local body = HC.Settings.pages.Markers.bodies.Regulars.content
+    refresh("Markers", "People")
+    local body = HC.Settings.pages.Markers.bodies.People.content
     equal(#body.regularRows, 27, "all regulars get rows")
     assert(#HC.Settings:Search("Person27") > 0, "last regular is searchable")
     ns.Assign.Forget("bnet:Person27#1234")

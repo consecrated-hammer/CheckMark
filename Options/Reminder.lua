@@ -44,7 +44,7 @@ local function build(panel, window)
                     db.remind_window_size = value
                     if ns.MarkWindow:IsShown() then ns.MarkWindow:Refresh() end
                 end)
-            _, y = check(frame, y, "Close when all clicked", "Close once you have clicked every card. A click is not confirmation of the game's marker state.", "remind_close_done")
+            _, y = check(frame, y, "Close when all clicked", "Close once you have clicked every card.", "remind_close_done")
             return y
         end, enabled, master)
         timed("Close after a while", "Close the window automatically after this time.", "remind_timeout",
@@ -64,7 +64,7 @@ local function build(panel, window)
                 { "Only as party leader", "Stay quiet unless you lead the party.", "remind_leader_only" },
                 { "Quiet if someone else marks", "Skip the reminder when another CheckMark user is already marking.", "remind_quiet_others" },
             }) do _, y = check(frame, y, spec[1], spec[2], spec[3]) end
-            _, y = O.Text(frame, "Uses Show grid on Visibility. Timing and outputs are shared by every profile.", y)
+            _, y = O.Text(frame, "Reminders only fire when the grid would show (Visibility).", y)
             _, y = O.Header(frame, "Timing", y)
             return y
         end, enabled, master)
@@ -74,7 +74,7 @@ local function build(panel, window)
             "Seconds after combat", "remind_combat_seconds", 1, 15, enabled, master)
         -- Outputs stay available for testing even while automatic reminders are off.
         section(function(frame, y)
-            _, y = O.Header(frame, "Reminder outputs", y)
+            _, y = O.Header(frame, "How to remind me", y)
             for _, spec in ipairs({
                 { "Chat message", "Print the reminder in chat.", "remind_chat" },
                 { "On-screen message", "Show a message like a raid warning.", "remind_screen" },

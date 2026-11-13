@@ -33,7 +33,7 @@ HC.spec.visibility = function(panel, y)
         { label = "Never", radio = true,
             get = function() return db.visibility_mode == "HIDDEN" end,
             set = function() setBase("HIDDEN") end },
-        { label = "Show when any of these match", heading = true },
+        { label = "Or when any of these match", heading = true },
     }
     for _, condition in ipairs(ns.GRID_CONDITIONS) do
         local key = condition.key

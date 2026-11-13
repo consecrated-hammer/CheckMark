@@ -210,7 +210,7 @@ local function assignments(panel, y)
     _, y = O.Header(panel, "Who goes first", y, ICONS.rules)
     local values, labels = {}, {}
     for index, rule in ipairs(ns.Assign.RULES) do values[index], labels[index] = rule.value, rule.label end
-    _, y = O.Dropdown(panel, "Who goes first", "Pinned regulars and roles compete in the chosen order. Learned assignments follow both when Regulars is included. This party's manual picks come first; the fill order comes last.",
+    _, y = O.Dropdown(panel, "Who goes first", "Decides who gets their marker first when two choices clash.",
         y, values, labels, function() return db.marker_rules end,
         function(value) db.marker_rules = value; changed() end, nil, nil, 200)
     local where
@@ -234,7 +234,7 @@ local function assignments(panel, y)
         y = row.hcNextY
     end
 
-    _, y = O.Text(panel, "Each marker is used once. If two choices request it, the earlier assignment keeps it; the other gets the next available choice. This is the plan, not confirmed game state.", y)
+    _, y = O.Text(panel, "Each marker is used once. If two people want the same one, the earlier rule wins and the other takes the next free marker.", y)
     _, y = O.Header(panel, "Fill order", y, ICONS.fill)
     _, y = fillStrip(panel, y)
 
@@ -250,7 +250,7 @@ end
 local function regulars(panel, y)
     local db = ns.db
     _, y = O.Header(panel, "People (shared)", y, ICONS.regulars)
-    _, y = O.Text(panel, "Pinned people keep your chosen marker. Learned people remember CheckMark clicks. Both are shared by every profile; assignment rules decide when they apply.", y)
+    _, y = O.Text(panel, "Pinned people always get the marker you chose. Learned people are ones CheckMark remembers from your clicks.", y)
     local list = CreateFrame("Frame", nil, panel)
     list:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y)
     list:SetSize(O.CONTENT_WIDTH + O.PAD * 2, 1)
@@ -318,7 +318,7 @@ local function regulars(panel, y)
 
     _, y = O.Header(controls, "Learning and party sharing (shared)", y, ICONS.learning)
     for _, spec in ipairs({
-        { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when Regulars is included.", "learn_mine" },
+        { "Learn from my choices", "Remember your CheckMark choices. Learned markers come after pinned people and roles, and only apply when pinned people are included.", "learn_mine" },
         { "Share with the party", "Tell party members running CheckMark who you marked with what.", "share_party" },
         { "Learn from the party", "Learn from what party members running CheckMark mark.", "learn_party" },
     }) do
@@ -380,6 +380,6 @@ HC.Settings:NewPage({
     profileScope = function(tab) return tab == "Assignments" end,
     tabs = {
         { name = "Assignments", build = assignments },
-        { name = "Regulars", build = regulars, columns = 1 },
+        { name = "People", build = regulars, columns = 1 },
     },
 })

@@ -22,10 +22,10 @@ Assign.ROLE_DEFAULT = { TANK = 8, HEALER = 3 }
 
 -- "Who goes first" choices; the fill order always comes last.
 Assign.RULES = {
-    { value = "REGULARS_ROLES", label = "Regulars, then roles", order = { "REGULARS", "ROLES" } },
-    { value = "ROLES_REGULARS", label = "Roles, then regulars", order = { "ROLES", "REGULARS" } },
-    { value = "REGULARS", label = "Regulars only", order = { "REGULARS" } },
-    { value = "ROLES", label = "Roles only", order = { "ROLES" } },
+    { value = "REGULARS_ROLES", label = "Pinned people, then tank and healer", order = { "REGULARS", "ROLES" } },
+    { value = "ROLES_REGULARS", label = "Tank and healer, then pinned people", order = { "ROLES", "REGULARS" } },
+    { value = "REGULARS", label = "Pinned people only", order = { "REGULARS" } },
+    { value = "ROLES", label = "Tank and healer only", order = { "ROLES" } },
     { value = "FILL", label = "Fill order only", order = {} },
 }
 

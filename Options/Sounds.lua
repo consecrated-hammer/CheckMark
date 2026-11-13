@@ -5,7 +5,7 @@ local O = ns.Options
 local function soundItems()
     local items = {}
     -- Only sounds this client has: the catalogue is already per client, and
-    -- anything Check sounds found missing stays out of the list.
+    -- anything Find missing sounds found missing stays out of the list.
     for _, sound in ipairs(ns.MARKER_SOUNDS) do
         local id, name = sound.id, sound.name
         if not ns.isMarkerSoundMissing(id) then items[#items + 1] = {
@@ -27,7 +27,7 @@ HC.Settings:NewPage({
     name = "Sounds",
     title = "Sounds",
     group = "main", profileScope = false,
-    description = "Choose the optional sound played after applying a prepared marker.",
+    description = "A sound when you click a marker onto someone.",
 }, function(panel, y)
     local flow = O.Flow(panel)
     local root = panel
@@ -36,7 +36,7 @@ HC.Settings:NewPage({
     heading, y = O.Header(panel, "Marker sound", y, "Interface\\TargetingFrame\\UI-RaidTargetingIcon_2")
     local master
     master, y = O.Check(panel, "Play marker sounds",
-        "Enabled by default. The sound plays after a left-click submits a prepared marker action.",
+        "Plays when you click a marker onto someone.",
         y, function() return ns.db.marker_sound_enabled ~= false end,
         function(value) ns.db.marker_sound_enabled = value end)
 
@@ -60,7 +60,7 @@ HC.Settings:NewPage({
     flow:Add(panel, -y + 4, function() return ns.db.marker_sound_enabled ~= false end)
     panel = O.Section(root, 1); y = -4
     local check
-    check, y = O.ActionButton(panel, y, "Check sounds", function() HC.Commands:Dispatch("sounds") end,
+    check, y = O.ActionButton(panel, y, "Find missing sounds", function() HC.Commands:Dispatch("sounds") end,
         "Play each sound for an instant to find any this client lacks. Missing sounds are skipped.")
     local result = O.FontString(panel, "GameFontHighlightSmall", "muted")
     result:SetPoint("LEFT", check, "RIGHT", 12, 0)

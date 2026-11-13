@@ -372,25 +372,25 @@ end
 for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     local ns = loadAddon(toc, {})
     local settings, A = ns.HammerCore.Settings, ns.Assign
-    settings:Show("Markers", "Regulars")
+    settings:Show("Markers", "People")
     local page = settings.pages.Markers
-    equal(table.concat(page.tabs, ","), "Assignments,Regulars", toc .. ": marker tabs")
-    equal(page.selectedTab, "Regulars", toc .. ": Regulars selected")
-    local body = page.bodies.Regulars.content
+    equal(table.concat(page.tabs, ","), "Assignments,People", toc .. ": marker tabs")
+    equal(page.selectedTab, "People", toc .. ": People selected")
+    local body = page.bodies.People.content
     equal(#body.regularRows, 0, toc .. ": empty list allocates no rows")
     assert(page.bodies.Assignments.hcRows["Who goes first"], "assignment rules stay on Assignments")
-    assert(page.bodies.Regulars.hcRows["Add a Battle.net friend"], "friend picker lives on Regulars")
-    equal(settings:Search("Add a Battle.net friend")[1].tab, "Regulars", toc .. ": search finds the new tab")
+    assert(page.bodies.People.hcRows["Add a Battle.net friend"], "friend picker lives on People")
+    equal(settings:Search("Add a Battle.net friend")[1].tab, "People", toc .. ": search finds the new tab")
     A.PinTag("Bianca#2222", 3, "Thornwyn")
     party.party1 = { name = "Visitor", realm = "Realm" }
     A.Learn(ns.getGroupMembers()[2], 5)
-    settings:Select("Markers", "Regulars")
+    settings:Select("Markers", "People")
     equal(body.regularRows[1]:IsShown(), true, toc .. ": new entries appear")
     equal(body.regularRows[2]:IsShown(), true, toc .. ": pinned and learned entries")
-    equal(settings:Search("Bianca")[1].tab, "Regulars", toc .. ": search finds a regular")
+    equal(settings:Search("Bianca")[1].tab, "People", toc .. ": search finds a regular")
     local forget = assert(wow.FindButton("Forget learned"))
     forget.scripts.OnClick(forget)
-    equal(page.selectedTab, "Regulars", toc .. ": edits keep the Regulars tab")
+    equal(page.selectedTab, "People", toc .. ": edits keep the People tab")
     equal(#A.List(), 1, toc .. ": forget learned preserves pinned regulars")
     equal(body.regularRows[2]:IsShown(), false, toc .. ": removed entry is hidden")
     assert(body.regularRows[1].Title.text:find("Bianca", 1, true), "remaining row is rebound to its regular")
@@ -398,7 +398,7 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(#A.List(), 0, toc .. ": remove targets the rebound row")
     equal(body.regularRows[1]:IsShown(), false, toc .. ": last removed row disappears")
     equal(#settings:Search("Bianca"), 0, toc .. ": removed names leave search")
-    equal(page.selectedTab, "Regulars", toc .. ": remove keeps the tab")
+    equal(page.selectedTab, "People", toc .. ": remove keeps the tab")
     settings:Select("Markers", "Assignments")
     equal(page.selectedTab, "Assignments", toc .. ": assignments remain accessible")
 end

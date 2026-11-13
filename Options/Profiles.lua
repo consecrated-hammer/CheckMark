@@ -8,7 +8,7 @@ HC.Profiles:NewPage({
     extra = function(frame, y)
         _, y = O.Header(frame, "What a profile saves", y)
         _, y = O.Text(frame, "Who goes first, role markers, fill order, and the grid's position, size and Show rules.", y)
-        _, y = O.Text(frame, "Regulars, learned markers, the reminder and the marking window are the same in every profile.", y)
+        _, y = O.Text(frame, "Pinned and learned people, the reminder and the marking window are the same in every profile.", y)
         _, y = O.SettingLink(frame, y, "Who goes first", "Markers", "Who goes first")
         return y
     end,

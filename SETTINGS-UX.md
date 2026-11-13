@@ -9,7 +9,7 @@ SavedVariables schema 2, keys, defaults and profile groups are unchanged.
 Before: Panel; Markers (Assignments, Regulars); Profiles; Reminder; Sounds;
 Visibility; reference pages.
 
-After: Panel (Layout, Position); Markers (Assignments, Regulars); Reminder
+After: Grid (Layout, Position); Markers (Assignments, People); Reminder
 (When and how, Marking window); Sounds; Visibility; Profiles (Profiles,
 Auto-switch); reference pages (What's new, Commands, Troubleshooting, About).
 
@@ -25,9 +25,9 @@ scope and destination; nothing is removed from SavedVariables.
 
 | Previous location | Controls | Tier | New location / behaviour | Scope |
 | --- | --- | --- | --- | --- |
-| Panel | Compact, Named, Oversized presets | E | Panel > Layout; search registration | Profile |
-| Panel | Cells per row, Spacing, Width, Height, Icon size, Unit names | E/S | Panel > Layout; search ownership fixed; isolated reset | Profile |
-| Visibility | Show drag handle, Handle position, Reset grid position | S | Panel > Position; hide edge selector when handle off; separate Re-centre from full position reset | Profile |
+| Panel | Compact, Named, Oversized presets | E | Grid > Layout; search registration | Profile |
+| Panel | Cells per row, Spacing, Width, Height, Icon size, Player names | E/S | Grid > Layout; search ownership fixed; isolated reset | Profile |
+| Visibility | Show drag handle, Handle position, Reset grid position | S | Grid > Position; hide edge selector when handle off; separate Re-centre from full position reset | Profile |
 | Markers > Assignments | Who goes first | E | Same; tooltip distinguishes pinned and learned precedence | Profile |
 | Markers > Assignments | Tank, Healer custom marker selectors, None | E | Same; collision notes and explanatory fallback text | Profile |
 | Markers > Assignments | Eight-icon fill order; left/right click reorder | S | Same; tooltip and search retained | Profile |
@@ -43,11 +43,11 @@ scope and destination; nothing is removed from SavedVariables.
 | Reminder | Wait after combat, Seconds after combat | S | Same; independent section; combat wait replacement explained | Shared |
 | Reminder | Show the marking window, Window size, Close when all clicked | E/S | Reminder > Marking window; child settings hidden when off | Shared |
 | Reminder | Close after a while, Seconds open | A | Marking window; nested dependency, gap-free layout | Shared |
-| Reminder | Chat message, On-screen message, Sound | S | When and how > Reminder outputs; Sound renamed Reminder sound; available for manual test with master off | Shared |
+| Reminder | Chat message, On-screen message, Sound | S | When and how > How to remind me; Sound renamed Reminder sound; available for manual test with master off | Shared |
 | Reminder | Test reminder, Reset reminder | E/S | Test on both tabs with unique names; independent reminder/window reset scopes | Action |
 | Sounds | Play a sound when applying a marker | S | Play marker sounds | Shared |
 | Sounds | Sounds multi-select, Select/Deselect all, Random/Sequential playback | S | Available sounds and Playback hidden when sounds off; pool and selection rules unchanged | Shared |
-| Sounds | Check sounds, diagnostic summary, Test sound, Reset sounds | S/A | Always available, including disabled marker sounds | Shared |
+| Sounds | Find missing sounds, diagnostic summary, Test sound, Reset sounds | S/A | Always available, including disabled marker sounds | Shared |
 | Visibility | Show: Always/Never or any matching dungeon/delve/world/leader rules | S | Show grid, explicitly per profile | Profile |
 | Visibility | Reset visibility | S | Reset grid visibility preserves position, handle and shared preferences | Profile + manual hide |
 | Visibility (HammerCore) | Show minimap button, Minimap right-click | S | Minimap button section | Shared |

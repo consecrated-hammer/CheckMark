@@ -9,13 +9,13 @@ local ICONS = { presets = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_1", g
 local section = O.Section
 local function refreshGrid() if ns.refreshPopup then ns.refreshPopup() end end
 
-HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", description = "Shape the compact five-player marker grid.",
+HC.Settings:NewPage({ name = "CheckMark", title = "Grid", group = "main", description = "Shape the compact five-player marker grid.",
     headerAction = ns.LivePreviewAction,
     tabs = { { name = "Layout", build = function(panel)
     local db = ns.db
     local presets = section(panel); local presetY = -8
     _, presetY = O.Header(presets, "Presets", presetY, ICONS.presets)
-    local specs = { { "Compact", "20px cells\nno names", 20, 20, 20, 5, 1, false }, { "Named", "105px cells\nnames on", 105, 20, 20, 5, 1, true }, { "Oversized", "130×55px cells\n48px icons", 130, 55, 48, 5, 1, true } }
+    local specs = { { "Compact", "Icons only", 20, 20, 20, 5, 1, false }, { "Named", "Icons and names", 105, 20, 20, 5, 1, true }, { "Oversized", "Large, with names", 130, 55, 48, 5, 1, true } }
     for i, spec in ipairs(specs) do
         local presetWidth = math.floor((O.CONTENT_WIDTH - 12) / 3)
         local button = O.Button(presets, presetWidth, 58)
@@ -38,7 +38,7 @@ HC.Settings:NewPage({ name = "CheckMark", title = "Panel", group = "main", descr
     _, sy = O.Slider(size, "Icon size", "Marker icon size stays independent from the cell width and height.", sy, 10, 48, 1, function() return db.icon_size end, function(v) db.icon_size = v; refreshGrid() end)
     sy = O.Flush(size, sy)
     local contents = section(panel, 2); local cy = -8; _, cy = O.Header(contents, "Cell contents", cy, ICONS.contents)
-    _, cy = O.Check(contents, "Unit names", "Show the party member name beside the marker. Use wider cells for this.", cy, function() return db.show_cell_names end, function(v) db.show_cell_names = v; refreshGrid() end)
+    _, cy = O.Check(contents, "Player names", "Show the party member name beside the marker. Use wider cells for this.", cy, function() return db.show_cell_names end, function(v) db.show_cell_names = v; refreshGrid() end)
     cy = O.Flush(contents, cy)
     local y = -8
     for _, item in ipairs({ { presets, presetsHeight }, { grid, -gy + 4 }, { size, -sy + 4 }, { contents, -cy + 4 } }) do item[1]:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, y); item[1]:SetHeight(item[2]); y = y - item[2] - 8 end
