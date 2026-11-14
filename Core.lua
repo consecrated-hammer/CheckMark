@@ -77,6 +77,7 @@ local DEFAULT_DB = {
     learn_mine              = true,
     share_party             = true,
     learn_party             = true,
+    sync_log                = {},
 }
 
 ns.DEFAULT_DB = DEFAULT_DB

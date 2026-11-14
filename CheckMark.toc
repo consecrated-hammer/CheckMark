@@ -33,3 +33,5 @@ Options\Reminder.lua
 Options\Sounds.lua
 Options\Visibility.lua
 Options\Profiles.lua
+
+Options\Sync.lua

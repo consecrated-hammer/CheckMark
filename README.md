@@ -62,9 +62,28 @@ Page and tab resets affect only their named settings. Reset grid visibility keep
 | `/checkmark reset position` | Move the grid back to the centre |
 | `/checkmark sounds` | Find marker sounds this client can't play |
 | `/checkmark profile [name]` | List profiles, or switch to one |
+| `/checkmark sync` or `/cm sync` | Check party communication and wait up to five seconds for replies |
 | `/checkmark whois` | Explain who gets which marker, and why |
 
 Every Consecrated Hammer addon also has `help`, `version`, `about`, `debug`, `startup`, `minimap`, `reset settings` and `quiz`.
+
+## Checking party sync
+
+Run `/cm sync`, or open **Troubleshooting > Check party sync**. Compatible
+CheckMark copies reply without marking anyone or changing assignments. A
+reply confirms round-trip communication; it does not verify Blizzard's hidden
+raid markers or override sharing/learning preferences. Older versions ignore
+the new probe, so no reply can also mean an older copy or disabled sharing.
+Both sides need this update for a confirmed result.
+
+Troubleshooting shows the latest 50 dated sync events, including queued sends,
+client rejections, received marker choices, replies and timeouts. Rapid identical
+events are grouped with a count. The log stays
+local across reloads and contains anonymous party slots, not names, GUIDs,
+marker assignments or raw messages. **Copy sync report** exports those details;
+**Clear sync log** keeps your marker preferences intact. `/cm debug` includes
+sync diagnostics too. Checks are manual and rate limited, with no background
+polling; raids are unsupported.
 
 ## Limits
 

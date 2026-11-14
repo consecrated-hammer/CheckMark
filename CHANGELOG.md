@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Is anybody receiving this? `/cm sync` checks party communication, with replies and a dated sync log on Troubleshooting.
+- Sync status now reports client rejections instead of mistaking a non-throwing send for delivery.
+
 - “Why is this settings input box not inputtable?” Excellent question. You can now type values beside settings sliders.
 
 ## [1.5.0] - 2026-11-13

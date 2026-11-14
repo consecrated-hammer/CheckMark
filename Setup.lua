@@ -111,6 +111,7 @@ local function buildReport()
         "Minimap size/scale: " .. string.format("%.1f x %.1f / %.3f", Minimap:GetWidth() or 0, Minimap:GetHeight() or 0, Minimap:GetEffectiveScale() or 0),
         "Report privacy: no character names, assignments or marker history included.",
     }
+    if ns.Share then lines[#lines + 1] = ns.Share:Report() end
     return table.concat(lines, "\n")
 end
 
@@ -237,6 +238,7 @@ HC:Init({
         }, "\n")
     end,
     diagnostics = buildReport,
+    troubleshooting = function(panel, y) return ns.SyncOptions.Build(panel, y) end,
     onSettingsShown = function()
         if ns.db.preview_window_open then ns.Preview:Show() end
     end,
@@ -328,6 +330,9 @@ local function whois()
     if #members == 0 then lines[#lines + 1] = "Not in a party." end
     HC.Copy:Show("CheckMark whois", table.concat(lines, "\n"), "Press Ctrl+C to copy, then paste it to Claude.")
 end
+
+HC.Commands:Add({ name = "sync", section = "Diagnostics", help = "Check party sync and wait for replies",
+    run = function() ns.Share:Check() end })
 
 HC.Commands:Add({ name = "whois", section = "Diagnostics", help = "Explain who gets which marker, and why",
     run = whois })

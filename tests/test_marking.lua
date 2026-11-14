@@ -279,6 +279,7 @@ do
     local function fire(event, ...) core.scripts.OnEvent(core, event, ...) end
     fire("PLAYER_ENTERING_WORLD"); flush()
     local sent = {}
+    C_ChatInfo.RegisterAddonMessagePrefix = function() return true end
     C_ChatInfo.SendAddonMessage = function(prefix, text, channel) sent[#sent + 1] = { prefix, text, channel } end
     party.party1 = { name = "Thornwyn", realm = "Realm" }
     party.party2 = { name = "Lumi", realm = "Realm" }
