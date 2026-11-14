@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Type values directly beside settings sliders; half-width controls leave more room for their labels.
+
 ## [1.5.0] - 2026-11-13
 
 ### Changed
