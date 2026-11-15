@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Save the welcome committee for your regular crew: Reminder > Pinned members only skips automatic popups when randoms join.
+
 - Is anybody receiving this? `/cm sync` checks party communication, with replies and a dated sync log on Troubleshooting.
 - Sync status now reports client rejections instead of mistaking a non-throwing send for delivery.
 

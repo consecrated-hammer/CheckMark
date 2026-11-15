@@ -39,7 +39,7 @@ In a party, `/checkmark toggle` or **Show grid** on the minimap menu shows the g
 
 - **Grid:** Layout has presets, grid spacing, size and names. Position has the drag handle, Re-centre grid and Reset grid position.
 - **Markers:** Assignments has Mark the party, pinned-person/role precedence, role markers and fill order. People keeps learning and Add controls above the pinned-first list. Forget learned confirms the count and keeps pinned people.
-- **Reminder:** When and how has triggers, timing, chat, on-screen text, sound and Test reminder. Marking window has its size, closing options and a test.
+- **Reminder:** When and how has triggers, timing, chat, on-screen text, sound and Test reminder. Enable **Pinned members only** to skip random additions; a learned preference alone does not qualify. Marking window has its size, closing options and a test.
 - **Sounds:** marker sounds, selected pool and playback mode, with Find missing sounds and Test sound always available.
 - **Visibility:** grid show rules, then shared minimap, update and settings-window choices.
 - **Profiles:** World, Delve and Dungeon, automatic switching, and profile management.

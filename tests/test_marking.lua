@@ -424,4 +424,124 @@ for _, toc in ipairs({ "CheckMark.toc", "CheckMark_Camelot.toc" }) do
     equal(page.selectedTab, "Assignments", toc .. ": assignments remain accessible")
 end
 
+-- Only pinned newcomers can trigger the optional crew-only reminder.
+local pinnedChecks=0
+local function pinnedEqual(a,b,label)pinnedChecks=pinnedChecks+1;equal(a,b,label)end
+for _,toc in ipairs({"CheckMark.toc","CheckMark_Camelot.toc"})do
+    local ns,core=loadAddon(toc,{schema=2,remind_pinned_only=true,remind_chat=false})
+    local R,W,A=ns.Reminder,ns.MarkWindow,ns.Assign
+    local function fire(event)core.scripts.OnEvent(core,event)end
+    fire("PLAYER_ENTERING_WORLD");flush()
+    pinnedEqual(ns.db.remind_pinned_only,true,toc..": saved pinned-only preference preserved")
+    A.Pin(ns.getGroupMembers()[1],6)
+    party.party1={name="Visitor",realm="Realm"}
+    fire("GROUP_ROSTER_UPDATE");flush()
+    pinnedEqual(W:IsShown(),false,toc..": forming party with random does not alert, even when self is pinned")
+    party.party2={name="Lumi",realm="Realm"}
+    A.Learn(ns.getGroupMembers()[3],4)
+    fire("GROUP_ROSTER_UPDATE");flush()
+    pinnedEqual(W:IsShown(),false,toc..": a learned marker alone is not a pin")
+    A.PinTag("Bianca#2222",3,"Thornwyn")
+    party.party3={name="Thornwyn",realm="Realm"}
+    fire("GROUP_ROSTER_UPDATE");flush()
+    pinnedEqual(W:IsShown(),true,toc..": pinned newcomer opens marking window")
+    pinnedEqual(#W.plan,4,toc..": qualifying reminder still includes whole party")
+    W:Close();clock=clock+11
+    party.party4={name="Random",realm="Realm"}
+    fire("GROUP_ROSTER_UPDATE");flush()
+    pinnedEqual(W:IsShown(),false,toc..": existing pinned member does not let a random newcomer trigger popup")
+    party.party3=nil;R:Check()
+    party.party3={name="Thornwyn",realm="Realm"};R:Check()
+    pinnedEqual(R.owed~=nil,true,toc..": pinned arrival queues normal join wait")
+    party.party3=nil;R:Check();flush()
+    pinnedEqual(W:IsShown(),false,toc..": pinned member leaving before timer cancels popup")
+    pinnedEqual(R.owed,nil,toc..": stale pinned reminder cleared")
+    combat=true;party.party3={name="Thornwyn",realm="Realm"};R:Check()
+    pinnedEqual(R.owed~=nil,true,toc..": pinned arrival held through combat")
+    party.party3=nil;R:Check();combat=false;fire("PLAYER_REGEN_ENABLED");flush()
+    pinnedEqual(W:IsShown(),false,toc..": departed pin does not pop up after combat")
+    party.party3={name="Thornwyn",realm="Realm"};R:Check()
+    for _,member in ipairs(ns.getGroupMembers())do if member.unit=="party3"then A.Unpin(member)end end
+    flush();pinnedEqual(W:IsShown(),false,toc..": removing pin before delivery cancels popup")
+    party.party3=nil;R:Check()
+    -- A friend on an alt still matches the account-level pin.
+    A.PinTag("Bianca#2222",3,"Thornwyn")
+    C_BattleNet.GetFriendAccountInfo=function()return {battleTag="Bianca#2222",gameAccountInfo={playerGuid="Player-Brightleaf-Realm"}}end
+    party.party3={name="Brightleaf",realm="Realm"};ns.Identity:RefreshFriends();clock=clock+11
+    R:Check();flush()
+    pinnedEqual(W:IsShown(),true,toc..": Battle.net-linked pinned alt triggers reminder")
+    W:Close();party.party3=nil;R:Check();flush()
+    R:Test();pinnedEqual(W:IsShown(),true,toc..": manual test bypasses pinned-only filter")
+    W:Close();W:Open();pinnedEqual(W:IsShown(),true,toc..": manual mark-party opening bypasses filter")
+    W:Close()
+    local settings=ns.HammerCore.Settings
+    settings:Show("Reminder","When and how")
+    local found=false
+    for _,result in ipairs(settings:Search("Pinned members only"))do
+        if result.label=="Pinned members only" and result.tab=="When and how"then found=true end
+    end
+    pinnedEqual(found,true,toc..": pinned filter searchable on Reminder tab")
+    -- Joining a pre-existing crew counts as a join, not just a later arrival.
+    party.party1,party.party2,party.party3,party.party4=nil,nil,nil,nil;R:Check()
+    party.party1={name="Brightleaf",realm="Realm"};clock=clock+11;R:Check();flush()
+    pinnedEqual(W:IsShown(),true,toc..": joining party containing a pinned member triggers reminder")
+    W:Close()
+    ns.db.remind_pinned_only=false;clock=clock+11
+    party.party2={name="Stranger",realm="Realm"};R:Check();flush()
+    pinnedEqual(W:IsShown(),true,toc..": turning filter off restores random newcomer reminders")
+    W:Close()
+    ns.db.remind_pinned_only=true;ns.db.remind_on_member=false
+    party.party1,party.party2,party.party3,party.party4=nil,nil,nil,nil;R:Check()
+    -- A delayed Battle.net identity must keep the original party-join trigger.
+    C_BattleNet.GetFriendAccountInfo=function()return nil end
+    ns.Identity:RefreshFriends()
+    party.party1={name="Latealt",realm="Realm"};clock=clock+11
+    R:Check();flush()
+    pinnedEqual(W:IsShown(),false,toc..": unresolved account does not trigger early")
+    C_BattleNet.GetFriendAccountInfo=function()return {battleTag="Bianca#2222",gameAccountInfo={playerGuid="Player-Latealt-Realm"}}end
+    fire("BN_FRIEND_INFO_CHANGED");flush()
+    pinnedEqual(W:IsShown(),true,toc..": delayed account resolution preserves join-only trigger")
+    W:Close();party.party1=nil;R:Check()
+    -- The initial roster may not have a name or GUID yet.
+    party.party1={name="Thornwyn",realm="Realm"};clock=clock+11
+    local oldName,oldGUID=UnitName,UnitGUID
+    UnitName=function(unit)if unit=="party1"then return nil end;return oldName(unit)end
+    UnitGUID=function(unit)if unit=="party1"then return nil end;return oldGUID(unit)end
+    R:Check()
+    UnitName,UnitGUID=oldName,oldGUID
+    R:Check();flush()
+    pinnedEqual(W:IsShown(),true,toc..": resolving anonymous roster preserves join-only trigger")
+    W:Close();party.party1=nil;R:Check()
+    party.party1={name="Lateexpired",realm="Realm"};R:Check();flush()
+    clock=clock+6
+    C_BattleNet.GetFriendAccountInfo=function()return {battleTag="Bianca#2222",gameAccountInfo={playerGuid="Player-Lateexpired-Realm"}}end
+    fire("BN_FRIEND_INFO_CHANGED");flush()
+    pinnedEqual(W:IsShown(),false,toc..": identity refresh cannot alert for an established random")
+    W:Close();party.party1=nil;R:Check()
+    ns.db.remind_on_member=true
+    party.party1={name="Thornwyn",realm="Realm"};clock=clock+11
+    local stableGUID=UnitGUID
+    UnitGUID=function(unit)if unit=="party1"then return nil end;return stableGUID(unit)end
+    A.Pin(ns.getGroupMembers()[2],3)
+    R:Check()
+    pinnedEqual(R.owed~=nil,true,toc..": named pin queues before GUID is available")
+    UnitGUID=stableGUID
+    R:Check();flush()
+    pinnedEqual(W:IsShown(),true,toc..": GUID resolving during delay preserves queued pin")
+    W:Close();clock=clock+11;R:Check();flush()
+    pinnedEqual(W:IsShown(),false,toc..": resolved established pin does not retrigger")
+    party.party1=nil;R:Check()
+    party.party1={name="Thornwyn",realm="Realm"}
+    local readableName=UnitName
+    UnitName=function(unit)if unit=="party1"then return nil end;return readableName(unit)end
+    UnitGUID=function(unit)if unit=="party1"then return nil end;return stableGUID(unit)end
+    R:Check();clock=clock+6;R:Check()
+    UnitName,UnitGUID=readableName,stableGUID
+    R:Check();flush()
+    pinnedEqual(W:IsShown(),false,toc..": established anonymous member resolving does not retrigger")
+    local fresh=loadAddon(toc,{schema=2})
+    pinnedEqual(fresh.db.remind_pinned_only,false,toc..": new filter defaults off for compatibility")
+end
+io.write("Pinned join reminders: "..pinnedChecks.." checks passed\n")
+
 io.write("marking tests passed\n")

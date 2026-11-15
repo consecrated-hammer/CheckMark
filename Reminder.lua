@@ -18,6 +18,7 @@ Reminder.DEFAULTS = {
     remind_enabled = true,
     remind_on_join = true,
     remind_on_member = true,
+    remind_pinned_only = false,
     remind_leader_only = false,
     remind_window = true,
     remind_join_wait = true,
@@ -67,12 +68,12 @@ local function now() return GetTime and GetTime() or 0 end
 
 local function inCombat() return InCombatLockdown and InCombatLockdown() end
 
--- GUIDs of everyone in an eligible party, or nil when there isn't one.
+-- Current members keyed by GUID/full identity, or nil outside a party.
 local function snapshot()
     if not (ns.isEligibleGroup and ns.isEligibleGroup()) then return nil end
     local set = {}
     for _, member in ipairs(ns.getGroupMembers()) do
-        set[member.guid or member.fullName] = true
+        set[member.guid or member.fullName] = member
     end
     return set
 end
@@ -95,31 +96,97 @@ local function gridCanShow(db)
     return not ns.gridConditionsMatch or ns.gridConditionsMatch()
 end
 
+local function clearOwed(self)
+    self.owed, self.owedMembers = nil, nil
+end
+
+local function pinned(member)
+    return member and member.unit ~= "player" and ns.Assign and ns.Assign.RegularFor(member, true)
+end
+
 function Reminder:Check()
     local db = ns.db
-    -- Roster events can arrive before the first world entry; until then
-    -- there's no "before" to compare with.
+    -- Roster events can arrive before the first world entry.
     if not db or not self.primed then return end
     local before, after = self.members, snapshot()
     self.members = after
     if not after then
-        self.owed = nil
+        clearOwed(self)
+        self.resolving = nil
         if ns.Assign then ns.Assign.ClearPicks() end
         if ns.Share then ns.Share:Reset() end
         return
     end
-    local reason
-    if not before then
-        reason = db.remind_on_join and "join" or nil
-    elseif db.remind_on_member then
-        local me = UnitGUID and UnitGUID("player")
-        for guid in pairs(after) do
-            if not before[guid] and guid ~= me then reason = "member"; break end
+    if not db.remind_pinned_only then
+        self.resolving = nil
+        local reason
+        if not before then
+            reason = db.remind_on_join and "join" or nil
+        elseif db.remind_on_member then
+            local me = UnitGUID and UnitGUID("player")
+            for key in pairs(after) do
+                if not before[key] and key ~= me then reason = "member"; break end
+            end
+        end
+        if not reason or not allowed(db) then return end
+        if self.owed ~= "join" then self.owed = reason end
+        self:Schedule("join")
+        return
+    end
+    local arrivals, reason = {}, nil
+    self.resolving = self.resolving or {}
+    for key, member in pairs(after) do
+        if member.unit ~= "player" then
+            local previousKey = before and before[key] and key or nil
+            if before and not previousKey then
+                for oldKey, old in pairs(before) do
+                    -- Stable names bridge a GUID becoming available. With no
+                    -- readable identity, only the still-occupied slot is known.
+                    if not after[oldKey] and (
+                        (not old.anonymous and not member.anonymous and old.fullName == member.fullName) or
+                        (old.anonymous and old.unit == member.unit and (not old.guid or old.guid == member.guid))) then
+                        previousKey = oldKey
+                        break
+                    end
+                end
+            end
+            local candidate = self.resolving[previousKey or key]
+            if previousKey and previousKey ~= key then
+                self.resolving[previousKey] = nil
+                if self.owedMembers and self.owedMembers[previousKey] then
+                    self.owedMembers[previousKey] = nil
+                    self.owedMembers[key] = true
+                end
+            end
+            if not candidate and not previousKey then
+                local trigger = not before and "join" or "member"
+                if (trigger == "join" and db.remind_on_join) or
+                    (trigger == "member" and db.remind_on_member) then
+                    candidate = { reason = trigger, untilAt = now() + 5 }
+                end
+            end
+            if candidate and now() <= candidate.untilAt then
+                if pinned(member) then
+                    reason = reason or candidate.reason
+                    arrivals[key] = true
+                    self.resolving[key] = nil
+                else
+                    self.resolving[key] = candidate
+                end
+            else
+                self.resolving[key] = nil
+            end
         end
     end
+    for key in pairs(self.resolving) do
+        if not after[key] then self.resolving[key] = nil end
+    end
+    if db.remind_pinned_only and not next(arrivals) then reason = nil end
     if not reason or not allowed(db) then return end
     -- A party that's still forming stays a "join".
     if self.owed ~= "join" then self.owed = reason end
+    self.owedMembers = self.owedMembers or {}
+    for key in pairs(arrivals) do self.owedMembers[key] = true end
     self:Schedule("join")
 end
 
@@ -160,11 +227,18 @@ end
 function Reminder:Deliver(held)
     local db = ns.db
     if not (self.owed and self.members) then return false end
-    if not allowed(db) then self.owed = nil; return false end
+    if not allowed(db) then clearOwed(self); return false end
+    if db.remind_pinned_only then
+        local present = false
+        for key in pairs(self.owedMembers or {}) do
+            if pinned(self.members[key]) then present = true; break end
+        end
+        if not present then clearOwed(self); return false end
+    end
     if not gridCanShow(db) then return false end
-    if db.remind_quiet_others and ns.Share and ns.Share:OtherMarker() then self.owed = nil; return false end
+    if db.remind_quiet_others and ns.Share and ns.Share:OtherMarker() then clearOwed(self); return false end
     local reason = self.owed
-    self.owed = nil
+    clearOwed(self)
     -- One held through combat isn't throttled away.
     return self:Fire(reason, held)
 end

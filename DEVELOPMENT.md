@@ -58,3 +58,19 @@ or assignment history are stored in it. Troubleshooting extends HammerCore via
 its supported spec hook; no vendored changes. tests/test_sync.lua runs two isolated
 addon copies under each client TOC through the real Share request/reply handlers.
 Native two-client transport remains a separate acceptance check.
+
+## Pinned-member join filter
+
+Reminder.remind_pinned_only defaults false and is a shared reminder preference.
+When enabled, both party-formation and later-member triggers require another
+member who is pinned according to Assign.RegularFor(member,true), including
+Battle.net-linked alts. Learned entries and the player's own pin never qualify.
+An existing pin in the roster does not make a newly added random qualify.
+
+New arrivals have a five-second identity-resolution grace period, rechecked
+after the existing Battle.net friend refresh. Queued reminders retain the
+qualifying arrival identities. Delivery rechecks
+that at least one remains present and pinned, so departure or unpinning during
+the join/combat/visibility delay cancels that pending alert. Manual opening,
+preview/Test reminder bypass the filter; an existing interrupted marking window
+resumes normally. Default-off preserves existing behavior and tab reset scopes.

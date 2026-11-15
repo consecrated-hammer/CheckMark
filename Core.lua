@@ -204,6 +204,10 @@ local function refreshFriends()
     C_Timer.After(0.5, function()
         friendsQueued = false
         ns.Identity:RefreshFriends()
+        local reminder = ns.Reminder
+        if ns.db and ns.db.remind_pinned_only and reminder and next(reminder.resolving or {}) then
+            reminder:Check()
+        end
     end)
 end
 

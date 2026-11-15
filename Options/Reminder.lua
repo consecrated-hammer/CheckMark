@@ -63,6 +63,7 @@ local function build(panel, window)
             for _, spec in ipairs({
                 { "When I join a party", "Remind when you join or form a party.", "remind_on_join" },
                 { "When someone joins", "Remind when a new player joins your party.", "remind_on_member" },
+                { "Pinned members only", "Only remind for pinned people joining or forming your party. Learned people and randoms do not trigger it; manual opening and tests still work.", "remind_pinned_only" },
                 { "Only as party leader", "Stay quiet unless you lead the party.", "remind_leader_only" },
                 { "Quiet if someone else marks", "Skip the reminder when another CheckMark user is already marking.", "remind_quiet_others" },
             }) do _, y = check(frame, y, spec[1], spec[2], spec[3]) end
@@ -70,7 +71,7 @@ local function build(panel, window)
             _, y = O.Header(frame, "Timing", y)
             return y
         end, enabled, master)
-        timed("Wait after joining", "Each new joiner restarts the wait.", "remind_join_wait",
+        timed("Wait after joining", "Each matching player who joins restarts this wait.", "remind_join_wait",
             "Seconds after joining", "remind_join_seconds", 1, 10, enabled, master)
         timed("Wait after combat", "A reminder held during combat waits so you can loot first. This replaces the joining wait.", "remind_combat_wait",
             "Seconds after combat", "remind_combat_seconds", 1, 15, enabled, master)
