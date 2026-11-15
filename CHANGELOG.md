@@ -2,10 +2,11 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-15
+
 - Save the welcome committee for your regular crew: Reminder > Pinned members only skips automatic popups when randoms join.
 
 - Is anybody receiving this? `/cm sync` checks party communication, with replies and a dated sync log on Troubleshooting.
-- Sync status now reports client rejections instead of mistaking a non-throwing send for delivery.
 
 - “Why is this settings input box not inputtable?” Excellent question. You can now type values beside settings sliders.
 

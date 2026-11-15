@@ -149,6 +149,11 @@ end
 -- HammerCore's tools/whatsnew_check.py fails the release without one. A
 -- `page` adds a link to that settings page.
 local WHATS_NEW = {
+    { version = "1.5.1", date = "2026-11-15", items = {
+        { title = "Is anybody receiving this?", text = "Use /cm sync to check party communication and see replies, addon versions and dated sync events on Troubleshooting.", page = "Troubleshooting", kind = "improved" },
+        { title = "Save the welcome committee for your crew", text = "Enable Pinned members only to keep automatic reminders quiet when randoms join.", page = "Reminder", tab = "When and how", kind = "improved" },
+        { text = "“Why is this settings input box not inputtable?” Excellent question. You can now type values beside settings sliders.", kind = "improved" },
+    } },
     { version = "1.5.0", date = "2026-11-13", items = {
         { title = "Clearer marker planning", text = "Drag fill-order markers with a cursor icon and insertion line. Who goes first fits its full labels, People keeps controls above the list, and Forget learned confirms the count.", kind = "improved", page = "Markers", tab = "Assignments" },
         { title = "Settings that fit", text = "Two-column controls, larger profile icons, scoped reset confirmations and search across every setting. Grid and Reminder each keep related controls in tabs.", kind = "improved", page = "Grid", tab = "Layout" },
