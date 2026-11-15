@@ -96,3 +96,5 @@ polling; raids are unsupported.
 ## Licence
 
 GPL v3, see [LICENSE.txt](https://github.com/consecrated-hammer/CheckMark/blob/main/LICENSE.txt).
+
+The pushpin in each marking card’s top-right corner saves that person’s marker. Gold means pinned; muted means unpinned. The separate tick in the other corner means you clicked to mark them.

@@ -141,12 +141,13 @@ local function makeCard(parent, index)
     card.iconButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     card.pin = CreateFrame("Button", nil, card)
-    card.pin:SetSize(18, 18)
-    card.pin:SetPoint("TOPRIGHT", -4, -4)
+    card.pin:SetSize(24, 24)
+    card.pin:SetPoint("TOPRIGHT", -2, -2)
     card.pin:SetFrameLevel(card:GetFrameLevel() + 3)
     card.pin.tex = card.pin:CreateTexture(nil, "ARTWORK")
-    card.pin.tex:SetAllPoints()
-    card.pin.tex:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    card.pin.tex:SetSize(20, 20)
+    card.pin.tex:SetPoint("CENTER")
+    card.pin.tex:SetTexture("Interface\\AddOns\\CheckMark\\Textures\\Pin")
     card.pin:SetScript("OnClick", function() MarkWindow:TogglePin(card.slot) end)
     card.pin:SetScript("OnEnter", function()
         local slot = card.slot
@@ -204,7 +205,8 @@ local function paintCard(card, slot)
     card.tick:SetShown(clicked)
     card:SetAlpha(clicked and 0.5 or 1)
     local pinned = ns.Assign.IsPinned(member)
-    card.pin.tex:SetAlpha(pinned and 1 or 0.25)
+    card.pin.tex:SetVertexColor(T.Unpack(pinned and "accent" or "muted"))
+    card.pin.tex:SetAlpha(pinned and 1 or 0.65)
     if card.SetBackdropBorderColor then card:SetBackdropBorderColor(T.Unpack(pinned and "accent" or "edge")) end
 end
 
