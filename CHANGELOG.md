@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-11-16
+
 - A pin that looks like a pin: marking cards now use a pushpin for saved markers, gold when pinned and muted when not. The separate tick still means you clicked to mark.
 
 ## [1.5.1] - 2026-11-15

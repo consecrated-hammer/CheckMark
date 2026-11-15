@@ -149,6 +149,9 @@ end
 -- HammerCore's tools/whatsnew_check.py fails the release without one. A
 -- `page` adds a link to that settings page.
 local WHATS_NEW = {
+    { version = "1.5.2", date = "2026-11-16", items = {
+        { title = "A pin that looks like a pin", text = "Marking cards now use a pushpin, gold when pinned and muted when not. The separate tick still means you clicked to mark.", kind = "improved" },
+    } },
     { version = "1.5.1", date = "2026-11-15", items = {
         { title = "Is anybody receiving this?", text = "Use /cm sync to check party communication and see replies, addon versions and dated sync events on Troubleshooting.", page = "Troubleshooting", kind = "improved" },
         { title = "Save the welcome committee for your crew", text = "Enable Pinned members only to keep automatic reminders quiet when randoms join.", page = "Reminder", tab = "When and how", kind = "improved" },
