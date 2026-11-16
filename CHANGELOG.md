@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Keeping up with the guild: a chat reminder flags newer stable releases seen in your group or guild. Configure Update reminders on Visibility; development and test builds stay quiet.
+
 ## [1.5.2] - 2026-11-16
 
 - A pin that looks like a pin: marking cards now use a pushpin for saved markers, gold when pinned and muted when not. The separate tick still means you clicked to mark.

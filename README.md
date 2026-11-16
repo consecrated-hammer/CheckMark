@@ -98,3 +98,12 @@ polling; raids are unsupported.
 GPL v3, see [LICENSE.txt](https://github.com/consecrated-hammer/CheckMark/blob/main/LICENSE.txt).
 
 The pushpin in each marking card’s top-right corner saves that person’s marker. Gold means pinned; muted means unpinned. The separate tick in the other corner means you clicked to mark them.
+
+### Update reminders
+
+Visibility > Updates > **Update reminders** tells you when another party, raid
+or guild member has a newer stable release. One chat reminder per login names
+the newer version and yours, with a pointer to CurseForge. Recent newer versions
+are remembered for up to 72 hours. This uses hidden addon messages, not a direct
+CurseForge check. Turning it off stops version sharing and reminders. Development,
+alpha, beta and test builds neither announce themselves nor show reminders.
